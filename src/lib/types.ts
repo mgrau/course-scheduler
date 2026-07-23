@@ -1,0 +1,63 @@
+export type ViewMode = '5day' | '7day';
+
+export interface TermInfo {
+  /** ISO date string YYYY-MM-DD */
+  start: string;
+  end: string;
+}
+
+export interface CourseInfo {
+  title: string;
+  term: TermInfo;
+}
+
+export interface Meeting {
+  /** Day names: Mon, Tue, Wed, Thu, Fri, Sat, Sun */
+  days: string[];
+  /** 24h time, e.g. "10:00" */
+  start?: string;
+  end?: string;
+  /** e.g. "Lecture", "Lab" */
+  label?: string;
+}
+
+export interface Holiday {
+  start: string;
+  end: string;
+  label: string;
+}
+
+export interface Category {
+  name: string;
+  color: string;
+}
+
+export interface Activity {
+  id: string;
+  title: string;
+  description?: string;
+  category?: string;
+  /** Undefined = unscheduled (lives in the tray) */
+  date?: string;
+}
+
+export interface Assignment {
+  id: string;
+  title: string;
+  description?: string;
+  category?: string;
+  assigned?: string;
+  due: string;
+  /** Optional due time, e.g. "23:59" */
+  time?: string;
+}
+
+export interface Schedule {
+  course: CourseInfo;
+  view: ViewMode;
+  meetings: Meeting[];
+  holidays: Holiday[];
+  categories: Category[];
+  activities: Activity[];
+  assignments: Assignment[];
+}

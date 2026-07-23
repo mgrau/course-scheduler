@@ -1,0 +1,34 @@
+@import 'tailwindcss';
+
+.print-only {
+  display: none;
+}
+
+@media print {
+  @page {
+    size: letter landscape;
+    margin: 10mm;
+  }
+
+  html,
+  body {
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+
+  .screen-only {
+    display: none !important;
+  }
+
+  .print-only {
+    display: block;
+  }
+
+  .page {
+    break-after: page;
+  }
+
+  .page:last-child {
+    break-after: auto;
+  }
+}
