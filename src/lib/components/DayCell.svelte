@@ -56,7 +56,7 @@
 
 <!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
 <div
-  class="min-h-24 border-b border-r border-gray-200 p-1
+  class="min-h-36 border-b border-r border-gray-200 p-1
     {!isIn
     ? 'bg-gray-100'
     : holiday

@@ -2,7 +2,7 @@
   import type { Activity, Assignment } from '../types';
   import { store } from '../store.svelte';
   import { ui } from '../ui.svelte';
-  import { categoryColor, hasConflict } from '../model';
+  import { categoryColor, darker, hasConflict, textOn } from '../model';
 
   let {
     kind,
@@ -36,10 +36,10 @@
 
 {#if kind === 'activity'}
   <button
-    class="block w-full cursor-grab truncate rounded px-1.5 py-0.5 text-left text-xs font-medium text-white {conflict
+    class="block w-full cursor-grab truncate rounded px-1.5 py-0.5 text-left text-xs font-medium {conflict
       ? 'ring-2 ring-red-500'
       : ''}"
-    style="background-color: {color}"
+    style="background-color: {color}; color: {textOn(color)}"
     draggable="true"
     {ondragstart}
     {onclick}
@@ -50,7 +50,7 @@
 {:else if kind === 'assigned'}
   <button
     class="block w-full cursor-grab truncate rounded border border-dashed bg-white px-1.5 py-0.5 text-left text-xs"
-    style="border-color: {color}; color: {color}"
+    style="border-color: {color}; color: {darker(color)}"
     draggable="true"
     {ondragstart}
     {onclick}
@@ -61,7 +61,7 @@
 {:else}
   <button
     class="block w-full cursor-grab truncate rounded border-2 bg-white px-1.5 py-0.5 text-left text-xs font-semibold"
-    style="border-color: {color}; color: {color}"
+    style="border-color: {color}; color: {darker(color)}"
     draggable="true"
     {ondragstart}
     {onclick}

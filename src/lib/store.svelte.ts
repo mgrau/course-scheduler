@@ -11,6 +11,14 @@ function loadInitial(): Schedule {
       const s = JSON.parse(raw) as Schedule;
       // Migration for schedules saved before weekStart existed.
       s.weekStart ??= 'sunday';
+      // Old default category colors get the brighter defaults.
+      const recolor: Record<string, string> = {
+        '#2563eb': '#0ea5e9',
+        '#7c3aed': '#a855f7',
+        '#059669': '#22c55e',
+        '#dc2626': '#f43f5e',
+      };
+      for (const c of s.categories) c.color = recolor[c.color] ?? c.color;
       return s;
     }
   } catch (e) {

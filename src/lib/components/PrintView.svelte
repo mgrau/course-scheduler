@@ -18,7 +18,9 @@
     dueOn,
     holidayLabel,
     inTerm,
+    darker,
     meetingsOn,
+    textOn,
     unscheduled,
   } from '../model';
   import { store } from '../store.svelte';
@@ -109,8 +111,10 @@
                       <div class="mt-0.5 space-y-0.5">
                         {#each activitiesOn(s, dateStr) as a (a.id)}
                           <div
-                            class="rounded px-1 py-0.5 font-medium text-white"
-                            style="background-color: {categoryColor(s, a.category)}"
+                            class="rounded px-1 py-0.5 font-medium"
+                            style="background-color: {categoryColor(s, a.category)}; color: {textOn(
+                              categoryColor(s, a.category),
+                            )}"
                           >
                             {a.title}
                           </div>
@@ -118,9 +122,8 @@
                         {#each assignedOn(s, dateStr) as a (a.id)}
                           <div
                             class="rounded border border-dashed bg-white px-1 py-0.5"
-                            style="border-color: {categoryColor(s, a.category)}; color: {categoryColor(
-                              s,
-                              a.category,
+                            style="border-color: {categoryColor(s, a.category)}; color: {darker(
+                              categoryColor(s, a.category),
                             )}"
                           >
                             ⇢ {a.title}
@@ -129,9 +132,8 @@
                         {#each dueOn(s, dateStr) as a (a.id)}
                           <div
                             class="rounded border-2 bg-white px-1 py-0.5 font-semibold"
-                            style="border-color: {categoryColor(s, a.category)}; color: {categoryColor(
-                              s,
-                              a.category,
+                            style="border-color: {categoryColor(s, a.category)}; color: {darker(
+                              categoryColor(s, a.category),
                             )}"
                           >
                             {a.title} due{a.time ? ` ${a.time}` : ''}
