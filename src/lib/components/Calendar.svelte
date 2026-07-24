@@ -113,13 +113,11 @@
   {#each weeks as week, i (i)}
     <div class="border-b border-r border-gray-200 bg-gray-50 p-1 text-right" data-week={i}>
       {#if gutterMonth(week, i)}
-        <div
-          class="inline-block rounded bg-slate-600 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white"
-        >
+        <div class="text-base font-bold uppercase tracking-wide text-slate-700">
           {gutterMonth(week, i)}
         </div>
       {/if}
-      <div class="text-lg font-bold text-gray-400" title="Course week {i + 1}">{i + 1}</div>
+      <div class="text-xs font-semibold text-gray-400" title="Course week {i + 1}">{i + 1}</div>
     </div>
     {#each dayIdxs as di (di)}
       <DayCell date={week[di]} extras={di === lastIdx ? foldExtras(week) : []} />
