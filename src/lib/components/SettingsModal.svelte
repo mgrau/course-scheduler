@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { DAY_NAMES } from '../dates';
+  import { dayOrder } from '../dates';
   import { store } from '../store.svelte';
   import { ui } from '../ui.svelte';
   import Modal from './Modal.svelte';
@@ -23,7 +23,7 @@
           bind:value={s.course.title}
         />
       </label>
-      <div class="mt-2 grid grid-cols-3 gap-3">
+      <div class="mt-2 grid grid-cols-2 gap-3 sm:grid-cols-4">
         <label class="block">
           <span class="text-xs text-gray-500">Term start</span>
           <input
@@ -46,8 +46,18 @@
             class="mt-0.5 w-full rounded border border-gray-300 px-2 py-1.5"
             bind:value={s.view}
           >
-            <option value="7day">Full week (Mon–Sun)</option>
-            <option value="5day">Weekdays (Mon–Fri)</option>
+            <option value="7day">Full week</option>
+            <option value="5day">Weekdays only</option>
+          </select>
+        </label>
+        <label class="block">
+          <span class="text-xs text-gray-500">Week starts on</span>
+          <select
+            class="mt-0.5 w-full rounded border border-gray-300 px-2 py-1.5"
+            bind:value={s.weekStart}
+          >
+            <option value="sunday">Sunday</option>
+            <option value="monday">Monday</option>
           </select>
         </label>
       </div>
@@ -59,7 +69,7 @@
         {#each s.meetings as meeting, i (i)}
           <div class="flex flex-wrap items-center gap-2 rounded border border-gray-200 p-2">
             <div class="flex gap-1">
-              {#each DAY_NAMES as day (day)}
+              {#each dayOrder(s.weekStart) as day (day)}
                 <button
                   type="button"
                   class="rounded px-1.5 py-0.5 text-xs font-medium

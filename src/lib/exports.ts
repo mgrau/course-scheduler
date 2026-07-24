@@ -39,7 +39,7 @@ interface WeekRow {
 }
 
 function weekRows(s: Schedule): WeekRow[] {
-  const weeks = weeksOf(parseDate(s.course.term.start), parseDate(s.course.term.end));
+  const weeks = weeksOf(parseDate(s.course.term.start), parseDate(s.course.term.end), s.weekStart);
   return weeks.map((week, i) => {
     const activities: string[] = [];
     const due: string[] = [];

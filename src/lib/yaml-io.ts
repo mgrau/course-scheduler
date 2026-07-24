@@ -1,5 +1,5 @@
 import YAML from 'yaml';
-import type { Schedule, ViewMode } from './types';
+import type { Schedule, ViewMode, WeekStart } from './types';
 import { fmtDate } from './dates';
 import { newId } from './model';
 
@@ -16,6 +16,7 @@ export function toYaml(s: Schedule): string {
   const doc = {
     course: s.course,
     view: s.view,
+    weekStart: s.weekStart,
     meetings: s.meetings.map((m) => clean(m)),
     holidays: s.holidays.map((h) =>
       h.start === h.end ? { date: h.start, label: h.label } : { ...h },
@@ -46,6 +47,7 @@ export function fromYaml(text: string): Schedule {
   }
 
   const view: ViewMode = raw.view === '5day' ? '5day' : '7day';
+  const weekStart: WeekStart = raw.weekStart === 'monday' ? 'monday' : 'sunday';
 
   const holidays = (raw.holidays ?? []).map((h: any) => {
     const start = dstr(h.date ?? h.start);
@@ -93,6 +95,7 @@ export function fromYaml(text: string): Schedule {
   return {
     course: { title: String(title), term: { start: termStart, end: termEnd } },
     view,
+    weekStart,
     meetings,
     holidays,
     categories,

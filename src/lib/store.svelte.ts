@@ -7,7 +7,12 @@ const STORAGE_KEY = 'course-scheduler:schedule';
 function loadInitial(): Schedule {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    if (raw) return JSON.parse(raw) as Schedule;
+    if (raw) {
+      const s = JSON.parse(raw) as Schedule;
+      // Migration for schedules saved before weekStart existed.
+      s.weekStart ??= 'sunday';
+      return s;
+    }
   } catch (e) {
     console.warn('Could not restore saved schedule:', e);
   }

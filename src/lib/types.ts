@@ -1,5 +1,7 @@
 export type ViewMode = '5day' | '7day';
 
+export type WeekStart = 'sunday' | 'monday';
+
 export interface TermInfo {
   /** ISO date string YYYY-MM-DD */
   start: string;
@@ -55,6 +57,7 @@ export interface Assignment {
 export interface Schedule {
   course: CourseInfo;
   view: ViewMode;
+  weekStart: WeekStart;
   meetings: Meeting[];
   holidays: Holiday[];
   categories: Category[];

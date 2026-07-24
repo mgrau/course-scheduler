@@ -1,4 +1,7 @@
-export const DAY_NAMES = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'] as const;
+import type { ViewMode, WeekStart } from './types';
+
+/** Indexed by Date.getDay() */
+export const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'] as const;
 
 export const MONTHS = [
   'January',
@@ -47,28 +50,44 @@ export function addDays(d: Date, n: number): Date {
   return r;
 }
 
-/** Monday-based weekday index: Mon=0 … Sun=6 */
-export function dayIndex(d: Date): number {
-  return (d.getDay() + 6) % 7;
-}
-
 export function weekdayName(d: Date): string {
-  return DAY_NAMES[dayIndex(d)];
+  return WEEKDAYS[d.getDay()];
 }
 
-export function mondayOf(d: Date): Date {
-  return addDays(d, -dayIndex(d));
+/** Weekday names in display order for the chosen week start. */
+export function dayOrder(ws: WeekStart): string[] {
+  return ws === 'monday'
+    ? ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+    : ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 }
 
-/** All Mon–Sun weeks covering [start, end]. */
-export function weeksOf(start: Date, end: Date): Date[][] {
+/** Which indices of a week row are visible for a view mode. */
+export function visibleDayIdxs(view: ViewMode, ws: WeekStart): number[] {
+  if (view === '7day') return [0, 1, 2, 3, 4, 5, 6];
+  return ws === 'monday' ? [0, 1, 2, 3, 4] : [1, 2, 3, 4, 5];
+}
+
+export function startOfWeek(d: Date, ws: WeekStart): Date {
+  const first = ws === 'monday' ? 1 : 0;
+  return addDays(d, -((d.getDay() - first + 7) % 7));
+}
+
+/** All weeks (7 dates each, in display order) covering [start, end]. */
+export function weeksOf(start: Date, end: Date, ws: WeekStart): Date[][] {
   const weeks: Date[][] = [];
-  let d = mondayOf(start);
+  let d = startOfWeek(start, ws);
   while (d <= end) {
     weeks.push(Array.from({ length: 7 }, (_, i) => addDays(d, i)));
     d = addDays(d, 7);
   }
   return weeks;
+}
+
+/** 1-based course week number of the week containing d. */
+export function weekNumber(d: Date, termStart: Date, ws: WeekStart): number {
+  const a = startOfWeek(d, ws).getTime();
+  const b = startOfWeek(termStart, ws).getTime();
+  return Math.round((a - b) / (7 * 86400000)) + 1;
 }
 
 export function monthLabel(d: Date): string {

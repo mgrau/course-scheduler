@@ -1,12 +1,14 @@
 <script lang="ts">
   import {
-    DAY_NAMES,
+    dayOrder,
     fmtDate,
     lastOfMonth,
     monthLabel,
     monthsOf,
     parseDate,
     sameMonth,
+    visibleDayIdxs,
+    weekNumber,
     weeksOf,
   } from '../dates';
   import {
@@ -26,12 +28,13 @@
   const termStart = $derived(parseDate(s.course.term.start));
   const termEnd = $derived(parseDate(s.course.term.end));
   const months = $derived(monthsOf(termStart, termEnd));
-  const dayIdxs = $derived(s.view === '5day' ? [0, 1, 2, 3, 4] : [0, 1, 2, 3, 4, 5, 6]);
+  const order = $derived(dayOrder(s.weekStart));
+  const dayIdxs = $derived(visibleDayIdxs(s.view, s.weekStart));
   const cards = $derived(unscheduled(s));
 
   /** Weeks of a month that contain at least one in-term day of that month. */
   function monthWeeks(month: Date): Date[][] {
-    return weeksOf(month, lastOfMonth(month)).filter((week) =>
+    return weeksOf(month, lastOfMonth(month), s.weekStart).filter((week) =>
       week.some((d) => sameMonth(d, month) && inTerm(s, fmtDate(d))),
     );
   }
@@ -47,9 +50,12 @@
         <table class="w-full table-fixed border-collapse">
           <thead>
             <tr>
+              <th class="w-8 border border-gray-400 bg-gray-100 px-1 py-0.5 text-center text-[10px] uppercase">
+                Wk
+              </th>
               {#each dayIdxs as i (i)}
                 <th class="border border-gray-400 bg-gray-100 px-1 py-0.5 text-left text-[10px] uppercase">
-                  {DAY_NAMES[i]}
+                  {order[i]}
                 </th>
               {/each}
             </tr>
@@ -57,6 +63,11 @@
           <tbody>
             {#each monthWeeks(month) as week (fmtDate(week[0]))}
               <tr>
+                <td
+                  class="border border-gray-400 bg-gray-100 p-1 text-center align-middle text-sm font-bold text-gray-500"
+                >
+                  {weekNumber(week[0], termStart, s.weekStart)}
+                </td>
                 {#each dayIdxs as i (i)}
                   {@const d = week[i]}
                   {@const dateStr = fmtDate(d)}

@@ -9,6 +9,7 @@ export function sampleSchedule(): Schedule {
       term: { start: '2026-08-24', end: '2026-12-11' },
     },
     view: '7day',
+    weekStart: 'sunday',
     meetings: [
       { days: ['Mon', 'Wed', 'Fri'], start: '10:00', end: '10:50', label: 'Lecture' },
       { days: ['Thu'], start: '13:00', end: '15:50', label: 'Lab' },
@@ -67,6 +68,7 @@ export function blankSchedule(): Schedule {
   return {
     course: { title: 'New Course', term: { start: fmtDate(start), end: fmtDate(end) } },
     view: '7day',
+    weekStart: 'sunday',
     meetings: [{ days: ['Mon', 'Wed', 'Fri'], start: '10:00', end: '10:50', label: 'Lecture' }],
     holidays: [],
     categories: [
