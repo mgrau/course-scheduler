@@ -9,7 +9,7 @@
   import Toolbar from './lib/components/Toolbar.svelte';
   import Tray from './lib/components/Tray.svelte';
   import { slugify } from './lib/model';
-  import { decodeShare, encodeShare } from './lib/share';
+  import { decodeShare } from './lib/share';
   import { store } from './lib/store.svelte';
   import { ui } from './lib/ui.svelte';
   import { toYaml } from './lib/yaml-io';
@@ -21,8 +21,9 @@
     store.persist();
   });
 
-  // Deep links: #data=<packed yaml> imports/opens that schedule; a bare
-  // #<slug-or-id> (legacy links) selects a stored course by name.
+  // Deep links: #data=<packed schedule> imports/opens that schedule; a bare
+  // #<slug-or-id> (legacy links) selects a stored course by name. The hash is
+  // cleared afterwards so the URL bar stays clean.
   async function resolveHash() {
     const h = decodeURIComponent(location.hash.slice(1));
     if (!h) return;
@@ -36,27 +37,16 @@
       } catch (e) {
         console.warn('Could not load the schedule from this link:', e);
       }
-      return;
+    } else {
+      const ids = store.courseIds();
+      const id =
+        ids.find((i) => i === h) ??
+        ids.find((i) => slugify(store.library.courses[i].course.title) === h);
+      if (id) store.switchCourse(id);
     }
-    const ids = store.courseIds();
-    const id =
-      ids.find((i) => i === h) ??
-      ids.find((i) => slugify(store.library.courses[i].course.title) === h);
-    if (id) store.switchCourse(id);
+    history.replaceState(null, '', location.pathname + location.search);
   }
   resolveHash();
-
-  // The hash always carries the full schedule, so the URL is the share link.
-  let hashTimer: ReturnType<typeof setTimeout> | undefined;
-  $effect(() => {
-    JSON.stringify(store.schedule);
-    clearTimeout(hashTimer);
-    hashTimer = setTimeout(async () => {
-      const data = await encodeShare(store.schedule);
-      history.replaceState(null, '', `#data=${data}`);
-    }, 400);
-    return () => clearTimeout(hashTimer);
-  });
 </script>
 
 <svelte:window onhashchange={resolveHash} />

@@ -23,10 +23,15 @@
 
   async function copyLink() {
     const data = await encodeShare(store.schedule);
-    history.replaceState(null, '', `#data=${data}`);
-    await navigator.clipboard.writeText(location.href);
+    const url = `${location.origin}${location.pathname}#data=${data}`;
+    await navigator.clipboard.writeText(url);
+    // Show the link in the URL bar briefly, then tidy it away again.
+    history.replaceState(null, '', url);
     copied = true;
-    setTimeout(() => (copied = false), 1500);
+    setTimeout(() => {
+      copied = false;
+      history.replaceState(null, '', location.pathname + location.search);
+    }, 1500);
   }
 
   const btn =
