@@ -20,10 +20,10 @@ export function sampleSchedule(): Schedule {
       { start: '2026-11-25', end: '2026-11-27', label: 'Thanksgiving' },
     ],
     categories: [
-      { name: 'lecture', color: '#0ea5e9' },
-      { name: 'lab', color: '#a855f7' },
-      { name: 'homework', color: '#22c55e' },
-      { name: 'exam', color: '#f43f5e' },
+      { name: 'lecture', color: '#22d3ee' },
+      { name: 'lab', color: '#a78bfa' },
+      { name: 'homework', color: '#fbbf24' },
+      { name: 'exam', color: '#fb7185' },
     ],
     activities: [
       { id: newId(), title: 'Course intro', category: 'lecture', date: '2026-08-24' },
@@ -72,9 +72,9 @@ export function blankSchedule(): Schedule {
     meetings: [{ days: ['Mon', 'Wed', 'Fri'], start: '10:00', end: '10:50', label: 'Lecture' }],
     holidays: [],
     categories: [
-      { name: 'lecture', color: '#0ea5e9' },
-      { name: 'homework', color: '#22c55e' },
-      { name: 'exam', color: '#f43f5e' },
+      { name: 'lecture', color: '#22d3ee' },
+      { name: 'homework', color: '#fbbf24' },
+      { name: 'exam', color: '#fb7185' },
     ],
     activities: [],
     assignments: [],

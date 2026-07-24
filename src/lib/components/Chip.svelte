@@ -36,7 +36,7 @@
 
 {#if kind === 'activity'}
   <button
-    class="block w-full cursor-grab truncate rounded px-1.5 py-0.5 text-left text-xs font-medium {conflict
+    class="block w-full cursor-grab truncate rounded px-1.5 py-0.5 text-left text-xs font-medium shadow-sm transition hover:brightness-110 {conflict
       ? 'ring-2 ring-red-500'
       : ''}"
     style="background-color: {color}; color: {textOn(color)}"
@@ -49,24 +49,28 @@
   </button>
 {:else if kind === 'assigned'}
   <button
-    class="block w-full cursor-grab truncate rounded border border-dashed bg-white px-1.5 py-0.5 text-left text-xs"
+    class="flex w-full cursor-grab items-center gap-1 rounded border border-dashed bg-white px-1.5 py-0.5 text-left text-xs shadow-sm transition hover:bg-gray-50"
     style="border-color: {color}; color: {darker(color)}"
     draggable="true"
+    data-chip="assigned:{item.id}"
     {ondragstart}
     {onclick}
     title="{item.title} assigned"
   >
-    {prefix}⇢ {item.title}
+    <span class="truncate">{prefix}{item.title}</span>
+    <span class="ml-auto shrink-0">→</span>
   </button>
 {:else}
   <button
-    class="block w-full cursor-grab truncate rounded border-2 bg-white px-1.5 py-0.5 text-left text-xs font-semibold"
+    class="flex w-full cursor-grab items-center gap-1 rounded border-2 bg-white px-1.5 py-0.5 text-left text-xs font-semibold shadow-sm transition hover:bg-gray-50"
     style="border-color: {color}; color: {darker(color)}"
     draggable="true"
+    data-chip="due:{item.id}"
     {ondragstart}
     {onclick}
     title="{item.title} due{dueTime ? ' at ' + dueTime : ''}"
   >
-    {prefix}{item.title} due{dueTime ? ' ' + dueTime : ''}
+    <span class="shrink-0">→</span>
+    <span class="truncate">{prefix}{item.title}{dueTime ? ` ${dueTime}` : ''}</span>
   </button>
 {/if}

@@ -22,6 +22,7 @@
   const meetings = $derived(isIn && !holiday ? meetingsOn(s, dateStr) : []);
   const classDay = $derived(isClassDay(s, dateStr));
   const isToday = $derived(dateStr === todayStr());
+  const weekend = $derived(date.getDay() === 0 || date.getDay() === 6);
 
   let dragOver = $state(false);
 
@@ -60,10 +61,13 @@
     {!isIn
     ? 'bg-gray-100'
     : holiday
-      ? 'bg-gray-200'
+      ? 'stripes bg-gray-100'
       : classDay
-        ? 'cursor-pointer bg-white hover:bg-blue-50/40'
-        : 'cursor-pointer bg-gray-50 hover:bg-blue-50/40'}
+        ? 'cursor-pointer bg-white hover:bg-sky-50/60'
+        : weekend
+          ? 'cursor-pointer bg-slate-100/70 hover:bg-sky-50/60'
+          : 'cursor-pointer bg-gray-50 hover:bg-sky-50/60'}
+    {isToday ? 'ring-2 ring-inset ring-sky-400/70' : ''}
     {dragOver ? 'ring-2 ring-inset ring-blue-400' : ''}"
   {onclick}
   {ondragover}
@@ -80,13 +84,19 @@
         {date.getDate() === 1 ? `${monthShort(date)} ` : ''}{date.getDate()}
       </span>
       {#if meetings.length > 0}
-        <span class="truncate text-[10px] text-gray-400">
+        <span
+          class="truncate rounded-full bg-slate-100 px-1.5 py-px text-[10px] font-medium text-slate-500"
+        >
           {meetings.map((m) => m.label ?? m.start ?? 'class').join(' · ')}
         </span>
       {/if}
     </div>
     {#if holiday}
-      <div class="mt-1 text-[11px] font-medium italic text-gray-500">{holiday}</div>
+      <div
+        class="mt-1 inline-block rounded bg-white/80 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-gray-500"
+      >
+        {holiday}
+      </div>
     {/if}
     <div class="mt-1 space-y-0.5">
       {#each activitiesOn(s, dateStr) as a (a.id)}

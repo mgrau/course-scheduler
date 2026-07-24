@@ -169,7 +169,7 @@
       <button
         type="button"
         class="mt-2 text-xs font-medium text-blue-600 hover:underline"
-        onclick={() => s.categories.push({ name: 'new category', color: '#f59e0b' })}
+        onclick={() => s.categories.push({ name: 'new category', color: '#2dd4bf' })}
         >+ Add category</button
       >
     </section>

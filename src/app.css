@@ -4,6 +4,15 @@
   display: none;
 }
 
+/* Diagonal hatching for holidays / cancelled days (screen and print). */
+.stripes {
+  background-image: repeating-linear-gradient(
+    -45deg,
+    rgba(100, 116, 139, 0.12) 0 5px,
+    transparent 5px 12px
+  );
+}
+
 @media print {
   @page {
     size: letter landscape;
@@ -30,5 +39,13 @@
 
   .page:last-child {
     break-after: auto;
+  }
+
+  /* When two short months share a page, pin them to the top and bottom. */
+  .month-page {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    height: 190mm;
   }
 }
