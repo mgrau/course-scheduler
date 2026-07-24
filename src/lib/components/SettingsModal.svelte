@@ -156,7 +156,11 @@
       <div class="space-y-2">
         {#each s.categories as c, i (i)}
           <div class="flex items-center gap-2">
-            <input type="color" class="h-7 w-10 cursor-pointer" bind:value={c.color} />
+            <input
+              type="color"
+              class="w-10 cursor-pointer self-stretch rounded-md"
+              bind:value={c.color}
+            />
             <input class="w-40 rounded border border-gray-300 px-2 py-1" bind:value={c.name} />
             <button
               type="button"
