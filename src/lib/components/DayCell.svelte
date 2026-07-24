@@ -38,10 +38,10 @@
   let dragOver = $state(false);
 
   function acceptable(e: DragEvent): boolean {
+    // Any in-term, non-holiday day accepts items — days without scheduled
+    // classes included.
     if (!isIn || holiday) return false;
-    const types = e.dataTransfer?.types ?? [];
-    if (types.includes('application/x-activity')) return classDay;
-    return types.includes('application/x-chip');
+    return (e.dataTransfer?.types ?? []).includes('application/x-chip');
   }
 
   function ondragover(e: DragEvent) {

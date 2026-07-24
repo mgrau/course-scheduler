@@ -55,9 +55,10 @@ export function unscheduled(s: Schedule): Activity[] {
   return s.activities.filter((a) => !a.date);
 }
 
-/** Scheduled on a day class doesn't meet (holiday added later, etc.). */
+/** Stranded on a holiday (class cancelled) or outside the term. */
 export function hasConflict(s: Schedule, a: Activity): boolean {
-  return !!a.date && !isClassDay(s, a.date);
+  if (!a.date) return false;
+  return !inTerm(s, a.date) || !!holidayLabel(s, a.date);
 }
 
 /** Lighten a hex color (mix toward white) — for tinted backgrounds. */

@@ -48,7 +48,9 @@
     data-chip="activity:{item.id}"
     {ondragstart}
     {onclick}
-    title={conflict ? `${item.title} — not a class day!` : (item.description ?? item.title)}
+    title={conflict
+      ? `${item.title} — class is cancelled on this day!`
+      : (item.description ?? item.title)}
   >
     <span class="w-full truncate">{prefix}{item.title}</span>
     {#if showDesc}
