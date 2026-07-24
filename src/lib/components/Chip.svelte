@@ -40,7 +40,7 @@
 
 {#if kind === 'activity'}
   <button
-    class="flex w-full cursor-grab flex-col justify-center overflow-hidden rounded px-1.5 text-left text-xs font-medium shadow-sm transition hover:brightness-105 {conflict
+    class="flex w-full cursor-grab flex-col justify-center overflow-hidden rounded px-1.5 text-left text-xs font-medium shadow-md shadow-slate-500/30 transition hover:brightness-105 {conflict
       ? 'ring-2 ring-red-500'
       : ''}"
     style="height: {size}px; background-color: {lighter(color, 0.6)}; color: {darker(color, 0.5)}"
@@ -57,7 +57,7 @@
   </button>
 {:else if kind === 'assigned'}
   <button
-    class="flex w-full cursor-grab items-center gap-1 overflow-hidden rounded px-1.5 text-left text-xs shadow-sm transition hover:brightness-105"
+    class="flex w-full cursor-grab items-center gap-1 overflow-hidden rounded px-1.5 text-left text-xs shadow-md shadow-slate-500/30 transition hover:brightness-105"
     style="height: {size}px; background-color: {lighter(color, 0.78)}; color: {darker(color, 0.45)}"
     draggable="true"
     data-chip="assigned:{item.id}"
@@ -70,7 +70,7 @@
   </button>
 {:else}
   <button
-    class="flex w-full cursor-grab items-center gap-1 overflow-hidden rounded px-1.5 text-left text-xs font-semibold shadow-sm transition hover:brightness-105"
+    class="flex w-full cursor-grab items-center gap-1 overflow-hidden rounded px-1.5 text-left text-xs font-semibold shadow-md shadow-slate-500/30 transition hover:brightness-105"
     style="height: {size}px; background-color: {lighter(color, 0.6)}; color: {darker(color, 0.5)}"
     draggable="true"
     data-chip="due:{item.id}"
