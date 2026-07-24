@@ -38,16 +38,30 @@
       week.some((d) => sameMonth(d, month) && inTerm(s, fmtDate(d))),
     );
   }
+
+  const maxWeeks = $derived(Math.max(1, ...months.map((m) => monthWeeks(m).length)));
+
+  // Week rows are the same height on every page: the month with the most
+  // weeks fills the printable letter-landscape height, the rest are shorter.
+  const TABLE_MM = 180;
+  const HEADER_MM = 6;
+  function tableHeightMm(nWeeks: number): number {
+    return HEADER_MM + ((TABLE_MM - HEADER_MM) / maxWeeks) * nWeeks;
+  }
 </script>
 
 <div class="print-only">
   {#if ui.printOpts.calendar}
     {#each months as month (fmtDate(month))}
+      {@const weeks = monthWeeks(month)}
       <section class="page">
         <h1 class="mb-2 text-xl font-bold">
           {s.course.title} — {monthLabel(month)}
         </h1>
-        <table class="month-table w-full table-fixed border-collapse">
+        <table
+          class="month-table w-full table-fixed border-collapse"
+          style="height: {tableHeightMm(weeks.length).toFixed(1)}mm"
+        >
           <thead>
             <tr>
               <th class="w-8 border border-gray-400 bg-gray-100 px-1 py-0.5 text-center text-[10px] uppercase">
@@ -61,7 +75,7 @@
             </tr>
           </thead>
           <tbody>
-            {#each monthWeeks(month) as week (fmtDate(week[0]))}
+            {#each weeks as week (fmtDate(week[0]))}
               <tr>
                 <td
                   class="border border-gray-400 bg-gray-100 p-1 text-center align-middle text-sm font-bold text-gray-500"
