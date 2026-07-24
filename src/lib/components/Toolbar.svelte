@@ -44,13 +44,17 @@
       class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#003057]"
     >
       <svg viewBox="0 0 24 24" class="h-6 w-6" fill="none" aria-hidden="true">
-        <rect x="4" y="5" width="16" height="15.5" rx="2.5" fill="white" />
-        <path d="M4 9 H20" stroke="#003057" stroke-width="1.5" />
-        <path d="M12 10.6 17.4 13.3 12 16 6.6 13.3Z" fill="#003057" />
+        <path d="M12 1.3 17 3.9 12 6.5 7 3.9Z" fill="white" />
+        <rect x="4" y="6.8" width="16" height="14.7" rx="2.5" fill="white" />
         <path
-          d="M9.5 15 12 16.2 14.5 15 V17 C14.5 18 9.5 18 9.5 17 Z"
+          d="M6.5 6.8 H17.5 A2.5 2.5 0 0 1 20 9.3 V10.4 H4 V9.3 A2.5 2.5 0 0 1 6.5 6.8 Z"
           fill="#003057"
         />
+        {#each [12.3, 16.3] as y (y)}
+          {#each [6.6, 10.9, 15.2] as x (x)}
+            <rect {x} {y} width="2.2" height="2.2" rx="0.55" fill="#003057" />
+          {/each}
+        {/each}
       </svg>
     </span>
     <input
