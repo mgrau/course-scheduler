@@ -1,10 +1,20 @@
 <script lang="ts">
   import { parseDate, shortDate } from '../dates';
+  import { slugify } from '../model';
   import { store } from '../store.svelte';
   import { ui } from '../ui.svelte';
   import Modal from './Modal.svelte';
 
   const lib = $derived(store.library);
+  let copiedId = $state('');
+
+  async function copyLink(id: string) {
+    const slug = slugify(lib.courses[id].course.title);
+    const url = `${location.origin}${location.pathname}#${encodeURIComponent(slug)}`;
+    await navigator.clipboard.writeText(url);
+    copiedId = id;
+    setTimeout(() => (copiedId = ''), 1500);
+  }
 
   function termLabel(id: string): string {
     const t = lib.courses[id].course.term;
@@ -51,6 +61,10 @@
           </div>
           <div class="text-xs text-gray-500">{termLabel(id)} · {counts(id)}</div>
         </button>
+        <button
+          class="text-xs font-medium text-gray-500 hover:underline"
+          onclick={() => copyLink(id)}>{copiedId === id ? 'copied!' : 'copy link'}</button
+        >
         <button
           class="text-xs font-medium text-gray-500 hover:underline"
           onclick={() => store.duplicateCourse(id)}>duplicate</button

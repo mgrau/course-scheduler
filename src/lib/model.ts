@@ -5,6 +5,14 @@ export function newId(): string {
   return crypto.randomUUID();
 }
 
+/** URL-friendly slug of a course title, for hash deep links. */
+export function slugify(title: string): string {
+  return title
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+}
+
 export function inTerm(s: Schedule, date: string): boolean {
   return date >= s.course.term.start && date <= s.course.term.end;
 }

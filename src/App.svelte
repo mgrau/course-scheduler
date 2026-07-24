@@ -8,6 +8,7 @@
   import SettingsModal from './lib/components/SettingsModal.svelte';
   import Toolbar from './lib/components/Toolbar.svelte';
   import Tray from './lib/components/Tray.svelte';
+  import { slugify } from './lib/model';
   import { store } from './lib/store.svelte';
   import { ui } from './lib/ui.svelte';
 
@@ -17,7 +18,29 @@
     JSON.stringify(store.library);
     store.persist();
   });
+
+  // Deep links: #<slug-of-course-title> (or a course id) selects that course.
+  function resolveHash() {
+    const h = decodeURIComponent(location.hash.slice(1));
+    if (!h) return;
+    const ids = store.courseIds();
+    const id =
+      ids.find((i) => i === h) ??
+      ids.find((i) => slugify(store.library.courses[i].course.title) === h);
+    if (id) store.switchCourse(id);
+  }
+  resolveHash();
+
+  // Keep the hash in sync with the active course (and its title).
+  $effect(() => {
+    const slug = slugify(store.schedule.course.title);
+    if (slug && decodeURIComponent(location.hash.slice(1)) !== slug) {
+      history.replaceState(null, '', `#${encodeURIComponent(slug)}`);
+    }
+  });
 </script>
+
+<svelte:window onhashchange={resolveHash} />
 
 <div class="screen-only flex h-screen flex-col bg-white text-gray-900">
   <Toolbar />
