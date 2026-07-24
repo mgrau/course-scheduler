@@ -1,41 +1,105 @@
 import type { Activity, Assignment, Schedule } from './types';
-import { sampleSchedule } from './sample';
+import { blankSchedule, sampleSchedule } from './sample';
 import { newId } from './model';
 
-const STORAGE_KEY = 'course-scheduler:schedule';
+const LIBRARY_KEY = 'course-scheduler:library';
+const LEGACY_KEY = 'course-scheduler:schedule';
 
-function loadInitial(): Schedule {
+export interface Library {
+  activeId: string;
+  courses: Record<string, Schedule>;
+}
+
+function migrate(s: Schedule): Schedule {
+  s.weekStart ??= 'sunday';
+  // Old default category colors get the current brighter defaults.
+  const recolor: Record<string, string> = {
+    '#2563eb': '#22d3ee',
+    '#0ea5e9': '#22d3ee',
+    '#7c3aed': '#a78bfa',
+    '#a855f7': '#a78bfa',
+    '#059669': '#fbbf24',
+    '#22c55e': '#fbbf24',
+    '#dc2626': '#fb7185',
+    '#f43f5e': '#fb7185',
+  };
+  for (const c of s.categories) c.color = recolor[c.color] ?? c.color;
+  return s;
+}
+
+function loadInitial(): Library {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
+    const raw = localStorage.getItem(LIBRARY_KEY);
     if (raw) {
-      const s = JSON.parse(raw) as Schedule;
-      // Migration for schedules saved before weekStart existed.
-      s.weekStart ??= 'sunday';
-      // Old default category colors get the brighter defaults.
-      const recolor: Record<string, string> = {
-        '#2563eb': '#0ea5e9',
-        '#7c3aed': '#a855f7',
-        '#059669': '#22c55e',
-        '#dc2626': '#f43f5e',
-      };
-      for (const c of s.categories) c.color = recolor[c.color] ?? c.color;
-      return s;
+      const lib = JSON.parse(raw) as Library;
+      for (const s of Object.values(lib.courses)) migrate(s);
+      if (!lib.courses[lib.activeId]) lib.activeId = Object.keys(lib.courses)[0];
+      if (lib.activeId) return lib;
+    }
+    // Migration: a schedule saved before the multi-course library existed.
+    const legacy = localStorage.getItem(LEGACY_KEY);
+    if (legacy) {
+      const s = migrate(JSON.parse(legacy) as Schedule);
+      localStorage.removeItem(LEGACY_KEY);
+      const id = newId();
+      return { activeId: id, courses: { [id]: s } };
     }
   } catch (e) {
-    console.warn('Could not restore saved schedule:', e);
+    console.warn('Could not restore saved schedules:', e);
   }
-  return sampleSchedule();
+  const id = newId();
+  return { activeId: id, courses: { [id]: sampleSchedule() } };
 }
 
 class ScheduleStore {
-  schedule = $state<Schedule>(loadInitial());
+  library = $state<Library>(loadInitial());
 
-  persist() {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(this.schedule));
+  /** The active course's schedule. */
+  get schedule(): Schedule {
+    return this.library.courses[this.library.activeId];
   }
 
+  persist() {
+    localStorage.setItem(LIBRARY_KEY, JSON.stringify(this.library));
+  }
+
+  courseIds(): string[] {
+    return Object.keys(this.library.courses);
+  }
+
+  switchCourse(id: string) {
+    if (this.library.courses[id]) this.library.activeId = id;
+  }
+
+  /** Add a course (blank unless given) and make it active. Returns its id. */
+  addCourse(s: Schedule = blankSchedule()): string {
+    const id = newId();
+    this.library.courses[id] = s;
+    this.library.activeId = id;
+    return id;
+  }
+
+  duplicateCourse(id: string) {
+    const src = this.library.courses[id];
+    if (!src) return;
+    const copy = JSON.parse(JSON.stringify(src)) as Schedule;
+    copy.course.title = `${copy.course.title} (copy)`;
+    this.addCourse(copy);
+  }
+
+  deleteCourse(id: string) {
+    if (!this.library.courses[id]) return;
+    delete this.library.courses[id];
+    if (this.library.activeId === id) {
+      this.library.activeId = Object.keys(this.library.courses)[0] ?? '';
+    }
+    // Never leave the library empty.
+    if (!this.library.activeId) this.addCourse();
+  }
+
+  /** Replace the active course's schedule (YAML import). */
   replace(s: Schedule) {
-    this.schedule = s;
+    this.library.courses[this.library.activeId] = s;
   }
 
   activity(id: string): Activity | undefined {

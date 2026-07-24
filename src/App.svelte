@@ -1,5 +1,6 @@
 <script lang="ts">
   import Calendar from './lib/components/Calendar.svelte';
+  import CoursesModal from './lib/components/CoursesModal.svelte';
   import ExportModal from './lib/components/ExportModal.svelte';
   import ItemModal from './lib/components/ItemModal.svelte';
   import PrintDialog from './lib/components/PrintDialog.svelte';
@@ -10,10 +11,10 @@
   import { store } from './lib/store.svelte';
   import { ui } from './lib/ui.svelte';
 
-  // Autosave: JSON.stringify reads the whole schedule deeply, so this effect
+  // Autosave: JSON.stringify reads the whole library deeply, so this effect
   // re-runs on any change anywhere in the state tree.
   $effect(() => {
-    JSON.stringify(store.schedule);
+    JSON.stringify(store.library);
     store.persist();
   });
 </script>
@@ -33,6 +34,9 @@
 {/if}
 {#if ui.settings}
   <SettingsModal />
+{/if}
+{#if ui.courses}
+  <CoursesModal />
 {/if}
 {#if ui.exporter}
   <ExportModal />

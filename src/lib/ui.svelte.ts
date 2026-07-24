@@ -7,6 +7,7 @@ export type EditorState =
 export const ui = $state({
   editor: null as EditorState,
   settings: false,
+  courses: false,
   exporter: false,
   printDialog: false,
   printOpts: {
