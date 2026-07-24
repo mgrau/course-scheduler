@@ -9,7 +9,7 @@
   import Toolbar from './lib/components/Toolbar.svelte';
   import Tray from './lib/components/Tray.svelte';
   import { slugify } from './lib/model';
-  import { decodeShare } from './lib/share';
+  import { decodeShare, encodeShare } from './lib/share';
   import { store } from './lib/store.svelte';
   import { ui } from './lib/ui.svelte';
   import { toYaml } from './lib/yaml-io';
@@ -22,8 +22,7 @@
   });
 
   // Deep links: #data=<packed schedule> imports/opens that schedule; a bare
-  // #<slug-or-id> (legacy links) selects a stored course by name. The hash is
-  // cleared afterwards so the URL bar stays clean.
+  // #<slug-or-id> (legacy links) selects a stored course by name.
   async function resolveHash() {
     const h = decodeURIComponent(location.hash.slice(1));
     if (!h) return;
@@ -44,9 +43,21 @@
         ids.find((i) => slugify(store.library.courses[i].course.title) === h);
       if (id) store.switchCourse(id);
     }
-    history.replaceState(null, '', location.pathname + location.search);
   }
   resolveHash();
+
+  // The URL bar always carries the current schedule, so copying the address
+  // is copying a share link.
+  let hashTimer: ReturnType<typeof setTimeout> | undefined;
+  $effect(() => {
+    JSON.stringify(store.schedule);
+    clearTimeout(hashTimer);
+    hashTimer = setTimeout(async () => {
+      const data = await encodeShare(store.schedule);
+      history.replaceState(null, '', `#data=${data}`);
+    }, 400);
+    return () => clearTimeout(hashTimer);
+  });
 </script>
 
 <svelte:window onhashchange={resolveHash} />
