@@ -33,7 +33,7 @@
     }
     return n;
   });
-  const chipH = $derived(Math.max(22, Math.min(64, Math.floor(120 / Math.max(nChips, 1)))));
+  const chipH = $derived(Math.max(18, Math.min(40, Math.floor(118 / Math.max(nChips, 1)))));
 
   let dragOver = $state(false);
 
@@ -68,7 +68,7 @@
 
 <!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
 <div
-  class="min-h-36 border-b border-r border-gray-200 p-1
+  class="h-36 overflow-hidden border-b border-r border-gray-200 p-1
     {!isIn
     ? 'bg-gray-100'
     : holiday

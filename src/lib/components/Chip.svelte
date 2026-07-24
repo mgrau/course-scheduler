@@ -8,7 +8,7 @@
     kind,
     item,
     prefix = '',
-    size = 64,
+    size = 40,
   }: {
     kind: 'activity' | 'assigned' | 'due';
     item: Activity | Assignment;
@@ -22,7 +22,7 @@
     kind === 'activity' && hasConflict(store.schedule, item as Activity),
   );
   const dueTime = $derived(kind === 'due' ? ((item as Assignment).time ?? '') : '');
-  const showDesc = $derived(size >= 44 && !!item.description);
+  const showDesc = $derived(size >= 36 && !!item.description);
 
   function ondragstart(e: DragEvent) {
     if (!e.dataTransfer) return;
