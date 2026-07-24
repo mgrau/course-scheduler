@@ -8,10 +8,13 @@
     kind,
     item,
     prefix = '',
+    size = 64,
   }: {
     kind: 'activity' | 'assigned' | 'due';
     item: Activity | Assignment;
     prefix?: string;
+    /** Chip height in px; cells shrink this when a day is crowded. */
+    size?: number;
   } = $props();
 
   const color = $derived(categoryColor(store.schedule, item.category));
@@ -19,6 +22,7 @@
     kind === 'activity' && hasConflict(store.schedule, item as Activity),
   );
   const dueTime = $derived(kind === 'due' ? ((item as Assignment).time ?? '') : '');
+  const showDesc = $derived(size >= 44 && !!item.description);
 
   function ondragstart(e: DragEvent) {
     if (!e.dataTransfer) return;
@@ -36,21 +40,25 @@
 
 {#if kind === 'activity'}
   <button
-    class="block w-full cursor-grab truncate rounded px-1.5 py-0.5 text-left text-xs font-medium shadow-sm transition hover:brightness-105 {conflict
+    class="flex w-full cursor-grab flex-col justify-center overflow-hidden rounded px-1.5 text-left text-xs font-medium shadow-sm transition hover:brightness-105 {conflict
       ? 'ring-2 ring-red-500'
       : ''}"
-    style="background-color: {lighter(color, 0.6)}; color: {darker(color, 0.5)}"
+    style="height: {size}px; background-color: {lighter(color, 0.6)}; color: {darker(color, 0.5)}"
     draggable="true"
+    data-chip="activity:{item.id}"
     {ondragstart}
     {onclick}
     title={conflict ? `${item.title} — not a class day!` : (item.description ?? item.title)}
   >
-    {prefix}{item.title}
+    <span class="w-full truncate">{prefix}{item.title}</span>
+    {#if showDesc}
+      <span class="w-full truncate text-[10px] font-normal opacity-75">{item.description}</span>
+    {/if}
   </button>
 {:else if kind === 'assigned'}
   <button
-    class="flex w-full cursor-grab items-center gap-1 rounded px-1.5 py-0.5 text-left text-xs shadow-sm transition hover:brightness-105"
-    style="background-color: {lighter(color, 0.78)}; color: {darker(color, 0.45)}"
+    class="flex w-full cursor-grab items-center gap-1 overflow-hidden rounded px-1.5 text-left text-xs shadow-sm transition hover:brightness-105"
+    style="height: {size}px; background-color: {lighter(color, 0.78)}; color: {darker(color, 0.45)}"
     draggable="true"
     data-chip="assigned:{item.id}"
     {ondragstart}
@@ -62,8 +70,8 @@
   </button>
 {:else}
   <button
-    class="flex w-full cursor-grab items-center gap-1 rounded px-1.5 py-0.5 text-left text-xs font-semibold shadow-sm transition hover:brightness-105"
-    style="background-color: {lighter(color, 0.6)}; color: {darker(color, 0.5)}"
+    class="flex w-full cursor-grab items-center gap-1 overflow-hidden rounded px-1.5 text-left text-xs font-semibold shadow-sm transition hover:brightness-105"
+    style="height: {size}px; background-color: {lighter(color, 0.6)}; color: {darker(color, 0.5)}"
     draggable="true"
     data-chip="due:{item.id}"
     {ondragstart}

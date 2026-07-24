@@ -24,6 +24,17 @@
   const isToday = $derived(dateStr === todayStr());
   const weekend = $derived(date.getDay() === 0 || date.getDay() === 6);
 
+  // Chips are tall by default but shrink to fit when a day is crowded.
+  const nChips = $derived.by(() => {
+    let n = activitiesOn(s, dateStr).length + assignedOn(s, dateStr).length + dueOn(s, dateStr).length;
+    for (const ex of extras) {
+      const d = fmtDate(ex);
+      if (inTerm(s, d)) n += activitiesOn(s, d).length + assignedOn(s, d).length + dueOn(s, d).length;
+    }
+    return n;
+  });
+  const chipH = $derived(Math.max(22, Math.min(64, Math.floor(120 / Math.max(nChips, 1)))));
+
   let dragOver = $state(false);
 
   function acceptable(e: DragEvent): boolean {
@@ -100,24 +111,24 @@
     {/if}
     <div class="mt-1 space-y-0.5">
       {#each activitiesOn(s, dateStr) as a (a.id)}
-        <Chip kind="activity" item={a} />
+        <Chip kind="activity" item={a} size={chipH} />
       {/each}
       {#each assignedOn(s, dateStr) as a (a.id)}
-        <Chip kind="assigned" item={a} />
+        <Chip kind="assigned" item={a} size={chipH} />
       {/each}
       {#each dueOn(s, dateStr) as a (a.id)}
-        <Chip kind="due" item={a} />
+        <Chip kind="due" item={a} size={chipH} />
       {/each}
       {#each extras as ex (fmtDate(ex))}
         {#if inTerm(s, fmtDate(ex))}
           {#each activitiesOn(s, fmtDate(ex)) as a (a.id)}
-            <Chip kind="activity" item={a} prefix="{weekdayName(ex)}: " />
+            <Chip kind="activity" item={a} prefix="{weekdayName(ex)}: " size={chipH} />
           {/each}
           {#each assignedOn(s, fmtDate(ex)) as a (a.id)}
-            <Chip kind="assigned" item={a} prefix="{weekdayName(ex)}: " />
+            <Chip kind="assigned" item={a} prefix="{weekdayName(ex)}: " size={chipH} />
           {/each}
           {#each dueOn(s, fmtDate(ex)) as a (a.id)}
-            <Chip kind="due" item={a} prefix="{weekdayName(ex)}: " />
+            <Chip kind="due" item={a} prefix="{weekdayName(ex)}: " size={chipH} />
           {/each}
         {/if}
       {/each}
