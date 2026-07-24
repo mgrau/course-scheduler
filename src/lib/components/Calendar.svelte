@@ -32,6 +32,14 @@
     const el = container;
     if (!el) return;
     const box = el.getBoundingClientRect();
+    const W = box.width;
+    // Week-row bands, from the gutter cells.
+    const bands = Array.from(el.querySelectorAll('[data-week]')).map((g) => {
+      const r = g.getBoundingClientRect();
+      return { top: r.top - box.top, bottom: r.bottom - box.top };
+    });
+    const rowOf = (y: number) => bands.findIndex((b) => y >= b.top && y <= b.bottom);
+
     const out: { d: string; color: string }[] = [];
     for (const a of s.assignments) {
       if (!a.assigned) continue;
@@ -44,11 +52,26 @@
       const y1 = f.top + f.height / 2 - box.top;
       const x2 = t.left - box.left;
       const y2 = t.top + t.height / 2 - box.top;
-      const dx = Math.max(28, Math.abs(x2 - x1) / 3);
-      out.push({
-        d: `M ${x1} ${y1} C ${x1 + dx} ${y1}, ${x2 - dx} ${y2}, ${x2} ${y2}`,
-        color: categoryColor(s, a.category),
-      });
+      const r1 = rowOf(y1);
+      const r2 = rowOf(y2);
+
+      // The thread runs parallel to the weeks: along the row, off the right
+      // edge, and back in from the left on the next row — like text wrapping.
+      let d: string;
+      if (r1 === r2 || r1 === -1 || r2 === -1 || r2 < r1) {
+        d =
+          Math.abs(y2 - y1) < 4 || x2 - x1 < 28
+            ? `M ${x1} ${y1} L ${x2} ${y2}`
+            : `M ${x1} ${y1} H ${x2 - 16} C ${x2 - 7} ${y1}, ${x2 - 9} ${y2}, ${x2} ${y2}`;
+      } else {
+        const parts = [`M ${x1} ${y1} H ${W + 24}`];
+        for (let k = r1 + 1; k < r2; k++) {
+          parts.push(`M -24 ${bands[k].bottom - 12} H ${W + 24}`);
+        }
+        parts.push(`M -24 ${y2} H ${x2}`);
+        d = parts.join(' ');
+      }
+      out.push({ d, color: categoryColor(s, a.category) });
     }
     threads = out;
   }
@@ -88,7 +111,7 @@
   {/each}
 
   {#each weeks as week, i (i)}
-    <div class="border-b border-r border-gray-200 bg-gray-50 p-1 text-right">
+    <div class="border-b border-r border-gray-200 bg-gray-50 p-1 text-right" data-week={i}>
       {#if gutterMonth(week, i)}
         <div
           class="inline-block rounded bg-slate-600 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white"
