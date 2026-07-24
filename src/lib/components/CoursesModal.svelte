@@ -3,6 +3,7 @@
   import { encodeShare } from '../share';
   import { store } from '../store.svelte';
   import { ui } from '../ui.svelte';
+  import Icon from './Icon.svelte';
   import Modal from './Modal.svelte';
 
   const lib = $derived(store.library);
@@ -63,17 +64,24 @@
           <div class="text-xs text-gray-500">{termLabel(id)} · {counts(id)}</div>
         </button>
         <button
-          class="text-xs font-medium text-gray-500 hover:underline"
-          onclick={() => copyLink(id)}>{copiedId === id ? 'copied!' : 'copy link'}</button
+          class="flex items-center gap-1 text-xs font-medium text-gray-500 hover:underline"
+          onclick={() => copyLink(id)}
         >
+          <Icon name={copiedId === id ? 'check' : 'link'} class="h-3.5 w-3.5" />
+          {copiedId === id ? 'copied!' : 'copy link'}
+        </button>
         <button
-          class="text-xs font-medium text-gray-500 hover:underline"
-          onclick={() => store.duplicateCourse(id)}>duplicate</button
+          class="flex items-center gap-1 text-xs font-medium text-gray-500 hover:underline"
+          onclick={() => store.duplicateCourse(id)}
         >
+          <Icon name="copy" class="h-3.5 w-3.5" />duplicate
+        </button>
         <button
-          class="text-xs font-medium text-red-500 hover:underline"
-          onclick={() => remove(id)}>delete</button
+          class="flex items-center gap-1 text-xs font-medium text-red-500 hover:underline"
+          onclick={() => remove(id)}
         >
+          <Icon name="trash" class="h-3.5 w-3.5" />delete
+        </button>
       </div>
     {/each}
   </div>
