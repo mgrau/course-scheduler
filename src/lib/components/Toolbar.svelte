@@ -27,16 +27,13 @@
     class="mr-2 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#003057]"
   >
     <svg viewBox="0 0 24 24" class="h-6 w-6" fill="none" aria-hidden="true">
-      <path d="M12 2 18 5 12 8 6 5Z" fill="white" />
-      <path d="M18 5 V7.6" stroke="white" stroke-width="1.3" stroke-linecap="round" />
-      <circle cx="18" cy="8.6" r="0.9" fill="white" />
-      <rect x="4.5" y="9.5" width="15" height="11" rx="2" stroke="white" stroke-width="1.6" />
-      <path d="M4.5 13.2 H19.5" stroke="white" stroke-width="1.3" />
-      <circle cx="8.6" cy="16" r="1" fill="white" />
-      <circle cx="12" cy="16" r="1" fill="white" />
-      <circle cx="15.4" cy="16" r="1" fill="white" />
-      <circle cx="8.6" cy="18.6" r="1" fill="white" />
-      <circle cx="12" cy="18.6" r="1" fill="white" />
+      <rect x="4" y="5" width="16" height="15.5" rx="2.5" fill="white" />
+      <path d="M4 9 H20" stroke="#003057" stroke-width="1.5" />
+      <path d="M12 10.6 17.4 13.3 12 16 6.6 13.3Z" fill="#003057" />
+      <path
+        d="M9.5 15 12 16.2 14.5 15 V17 C14.5 18 9.5 18 9.5 17 Z"
+        fill="#003057"
+      />
     </svg>
   </span>
   <input
