@@ -9,8 +9,10 @@
   import Toolbar from './lib/components/Toolbar.svelte';
   import Tray from './lib/components/Tray.svelte';
   import { slugify } from './lib/model';
+  import { decodeShare, encodeShare } from './lib/share';
   import { store } from './lib/store.svelte';
   import { ui } from './lib/ui.svelte';
+  import { toYaml } from './lib/yaml-io';
 
   // Autosave: JSON.stringify reads the whole library deeply, so this effect
   // re-runs on any change anywhere in the state tree.
@@ -19,10 +21,23 @@
     store.persist();
   });
 
-  // Deep links: #<slug-of-course-title> (or a course id) selects that course.
-  function resolveHash() {
+  // Deep links: #data=<packed yaml> imports/opens that schedule; a bare
+  // #<slug-or-id> (legacy links) selects a stored course by name.
+  async function resolveHash() {
     const h = decodeURIComponent(location.hash.slice(1));
     if (!h) return;
+    if (h.startsWith('data=')) {
+      try {
+        const incoming = await decodeShare(h.slice(5));
+        const yaml = toYaml(incoming);
+        const match = store.courseIds().find((i) => toYaml(store.library.courses[i]) === yaml);
+        if (match) store.switchCourse(match);
+        else store.addCourse(incoming);
+      } catch (e) {
+        console.warn('Could not load the schedule from this link:', e);
+      }
+      return;
+    }
     const ids = store.courseIds();
     const id =
       ids.find((i) => i === h) ??
@@ -31,12 +46,16 @@
   }
   resolveHash();
 
-  // Keep the hash in sync with the active course (and its title).
+  // The hash always carries the full schedule, so the URL is the share link.
+  let hashTimer: ReturnType<typeof setTimeout> | undefined;
   $effect(() => {
-    const slug = slugify(store.schedule.course.title);
-    if (slug && decodeURIComponent(location.hash.slice(1)) !== slug) {
-      history.replaceState(null, '', `#${encodeURIComponent(slug)}`);
-    }
+    JSON.stringify(store.schedule);
+    clearTimeout(hashTimer);
+    hashTimer = setTimeout(async () => {
+      const data = await encodeShare(store.schedule);
+      history.replaceState(null, '', `#data=${data}`);
+    }, 400);
+    return () => clearTimeout(hashTimer);
   });
 </script>
 
@@ -44,7 +63,7 @@
 
 <div class="screen-only flex h-screen flex-col bg-white text-gray-900">
   <Toolbar />
-  <div class="flex flex-1 overflow-hidden">
+  <div class="flex flex-1 flex-col overflow-hidden md:flex-row">
     <main class="flex-1 overflow-auto">
       <Calendar />
     </main>

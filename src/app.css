@@ -23,6 +23,17 @@ input[type='color']::-moz-color-swatch {
   border-radius: 0.375rem;
 }
 
+/* Calendar grid: narrow week gutter on phones, wider on larger screens. */
+.cal-grid {
+  display: grid;
+  grid-template-columns: 2.5rem repeat(var(--cols), minmax(0, 1fr));
+}
+@media (min-width: 640px) {
+  .cal-grid {
+    grid-template-columns: 4rem repeat(var(--cols), minmax(0, 1fr));
+  }
+}
+
 /* Diagonal hatching for holidays / cancelled days (screen and print). */
 .stripes {
   background-image: repeating-linear-gradient(

@@ -24,10 +24,7 @@
   }
 </script>
 
-<div
-  class="grid"
-  style="grid-template-columns: 4rem repeat({dayIdxs.length}, minmax(0, 1fr))"
->
+<div class="cal-grid" style="--cols: {dayIdxs.length}">
   <!-- header row -->
   <div
     class="sticky top-0 z-10 border-b border-r border-gray-200 bg-gray-50 px-2 py-1 text-right text-xs font-semibold uppercase tracking-wide text-gray-400"

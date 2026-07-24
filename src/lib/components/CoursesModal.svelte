@@ -1,6 +1,6 @@
 <script lang="ts">
   import { parseDate, shortDate } from '../dates';
-  import { slugify } from '../model';
+  import { encodeShare } from '../share';
   import { store } from '../store.svelte';
   import { ui } from '../ui.svelte';
   import Modal from './Modal.svelte';
@@ -8,9 +8,10 @@
   const lib = $derived(store.library);
   let copiedId = $state('');
 
+  // The link carries the full schedule, so it works in any browser.
   async function copyLink(id: string) {
-    const slug = slugify(lib.courses[id].course.title);
-    const url = `${location.origin}${location.pathname}#${encodeURIComponent(slug)}`;
+    const data = await encodeShare(lib.courses[id]);
+    const url = `${location.origin}${location.pathname}#data=${data}`;
     await navigator.clipboard.writeText(url);
     copiedId = id;
     setTimeout(() => (copiedId = ''), 1500);
