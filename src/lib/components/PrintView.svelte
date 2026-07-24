@@ -47,7 +47,7 @@
         <h1 class="mb-2 text-xl font-bold">
           {s.course.title} — {monthLabel(month)}
         </h1>
-        <table class="w-full table-fixed border-collapse">
+        <table class="month-table w-full table-fixed border-collapse">
           <thead>
             <tr>
               <th class="w-8 border border-gray-400 bg-gray-100 px-1 py-0.5 text-center text-[10px] uppercase">
@@ -92,23 +92,38 @@
                       {#if holiday}
                         <div class="italic text-gray-600">{holiday}</div>
                       {/if}
-                      {#each activitiesOn(s, dateStr) as a (a.id)}
-                        <div class="flex items-start gap-1">
-                          <span
-                            class="mt-0.5 inline-block h-2 w-2 shrink-0 rounded-full"
+                      <div class="mt-0.5 space-y-0.5">
+                        {#each activitiesOn(s, dateStr) as a (a.id)}
+                          <div
+                            class="rounded px-1 py-0.5 font-medium text-white"
                             style="background-color: {categoryColor(s, a.category)}"
-                          ></span>
-                          <span class="font-medium">{a.title}</span>
-                        </div>
-                      {/each}
-                      {#each assignedOn(s, dateStr) as a (a.id)}
-                        <div class="text-gray-600">⇢ {a.title}</div>
-                      {/each}
-                      {#each dueOn(s, dateStr) as a (a.id)}
-                        <div class="font-semibold">
-                          {a.title} due{a.time ? ` ${a.time}` : ''}
-                        </div>
-                      {/each}
+                          >
+                            {a.title}
+                          </div>
+                        {/each}
+                        {#each assignedOn(s, dateStr) as a (a.id)}
+                          <div
+                            class="rounded border border-dashed bg-white px-1 py-0.5"
+                            style="border-color: {categoryColor(s, a.category)}; color: {categoryColor(
+                              s,
+                              a.category,
+                            )}"
+                          >
+                            ⇢ {a.title}
+                          </div>
+                        {/each}
+                        {#each dueOn(s, dateStr) as a (a.id)}
+                          <div
+                            class="rounded border-2 bg-white px-1 py-0.5 font-semibold"
+                            style="border-color: {categoryColor(s, a.category)}; color: {categoryColor(
+                              s,
+                              a.category,
+                            )}"
+                          >
+                            {a.title} due{a.time ? ` ${a.time}` : ''}
+                          </div>
+                        {/each}
+                      </div>
                     {/if}
                   </td>
                 {/each}

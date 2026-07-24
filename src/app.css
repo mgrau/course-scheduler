@@ -31,4 +31,10 @@
   .page:last-child {
     break-after: auto;
   }
+
+  /* Fill the printable area of a letter-landscape page (215.9mm − 2×10mm
+     margins − title line); extra height is distributed among the week rows. */
+  .month-table {
+    height: 180mm;
+  }
 }
