@@ -41,18 +41,19 @@
 <header class="border-b border-gray-200 bg-white shadow-sm">
   <div class="flex flex-wrap items-center gap-x-2 gap-y-1.5 px-3 py-2">
     <span
-      class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#003057]"
+      class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-sky-500"
     >
       <svg viewBox="0 0 24 24" class="h-6 w-6" fill="none" aria-hidden="true">
-        <path d="M12 1.3 17 3.9 12 6.5 7 3.9Z" fill="white" />
-        <rect x="4" y="6.8" width="16" height="14.7" rx="2.5" fill="white" />
+        <rect x="3.5" y="4.8" width="17" height="16.2" rx="2.5" fill="white" />
         <path
-          d="M6.5 6.8 H17.5 A2.5 2.5 0 0 1 20 9.3 V10.4 H4 V9.3 A2.5 2.5 0 0 1 6.5 6.8 Z"
-          fill="#003057"
+          d="M6 4.8 H18 A2.5 2.5 0 0 1 20.5 7.3 V8.8 H3.5 V7.3 A2.5 2.5 0 0 1 6 4.8 Z"
+          fill="#0ea5e9"
         />
-        {#each [12.3, 16.3] as y (y)}
-          {#each [6.6, 10.9, 15.2] as x (x)}
-            <rect {x} {y} width="2.2" height="2.2" rx="0.55" fill="#003057" />
+        <rect x="6.9" y="2.4" width="1.9" height="4.4" rx="0.95" fill="white" />
+        <rect x="15.2" y="2.4" width="1.9" height="4.4" rx="0.95" fill="white" />
+        {#each [11.2, 15.6] as y (y)}
+          {#each [6.4, 10.8, 15.2] as x (x)}
+            <rect {x} {y} width="2.4" height="2.4" rx="0.6" fill="#0ea5e9" />
           {/each}
         {/each}
       </svg>
