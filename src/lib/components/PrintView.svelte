@@ -152,32 +152,29 @@
                           {/if}
                           <div class="mt-0.5 space-y-0.5">
                             {#each activitiesOn(s, dateStr) as a (a.id)}
+                              {@const c = categoryColor(s, a.category)}
                               <div
                                 class="rounded px-1 py-0.5 font-medium"
-                                style="background-color: {categoryColor(s, a.category)}; color: {textOn(
-                                  categoryColor(s, a.category),
-                                )}"
+                                style="background-color: {lighter(c, 0.6)}; color: {darker(c, 0.5)}"
                               >
                                 {a.title}
                               </div>
                             {/each}
                             {#each assignedOn(s, dateStr) as a (a.id)}
+                              {@const c = categoryColor(s, a.category)}
                               <div
-                                class="flex items-center gap-1 rounded border border-dashed bg-white px-1 py-0.5"
-                                style="border-color: {categoryColor(s, a.category)}; color: {darker(
-                                  categoryColor(s, a.category),
-                                )}"
+                                class="flex items-center gap-1 rounded px-1 py-0.5"
+                                style="background-color: {lighter(c, 0.78)}; color: {darker(c, 0.45)}"
                               >
                                 <span class="truncate">{a.title}</span>
                                 <span class="ml-auto shrink-0">→</span>
                               </div>
                             {/each}
                             {#each dueOn(s, dateStr) as a (a.id)}
+                              {@const c = categoryColor(s, a.category)}
                               <div
-                                class="flex items-center gap-1 rounded border-2 bg-white px-1 py-0.5 font-semibold"
-                                style="border-color: {categoryColor(s, a.category)}; color: {darker(
-                                  categoryColor(s, a.category),
-                                )}"
+                                class="flex items-center gap-1 rounded px-1 py-0.5 font-semibold"
+                                style="background-color: {lighter(c, 0.6)}; color: {darker(c, 0.5)}"
                               >
                                 <span class="shrink-0">→</span>
                                 <span class="truncate">

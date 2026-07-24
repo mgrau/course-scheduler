@@ -2,7 +2,7 @@
   import type { Activity, Assignment } from '../types';
   import { store } from '../store.svelte';
   import { ui } from '../ui.svelte';
-  import { categoryColor, darker, hasConflict, textOn } from '../model';
+  import { categoryColor, darker, hasConflict, lighter } from '../model';
 
   let {
     kind,
@@ -36,10 +36,10 @@
 
 {#if kind === 'activity'}
   <button
-    class="block w-full cursor-grab truncate rounded px-1.5 py-0.5 text-left text-xs font-medium shadow-sm transition hover:brightness-110 {conflict
+    class="block w-full cursor-grab truncate rounded px-1.5 py-0.5 text-left text-xs font-medium shadow-sm transition hover:brightness-105 {conflict
       ? 'ring-2 ring-red-500'
       : ''}"
-    style="background-color: {color}; color: {textOn(color)}"
+    style="background-color: {lighter(color, 0.6)}; color: {darker(color, 0.5)}"
     draggable="true"
     {ondragstart}
     {onclick}
@@ -49,8 +49,8 @@
   </button>
 {:else if kind === 'assigned'}
   <button
-    class="flex w-full cursor-grab items-center gap-1 rounded border border-dashed bg-white px-1.5 py-0.5 text-left text-xs shadow-sm transition hover:bg-gray-50"
-    style="border-color: {color}; color: {darker(color)}"
+    class="flex w-full cursor-grab items-center gap-1 rounded px-1.5 py-0.5 text-left text-xs shadow-sm transition hover:brightness-105"
+    style="background-color: {lighter(color, 0.78)}; color: {darker(color, 0.45)}"
     draggable="true"
     data-chip="assigned:{item.id}"
     {ondragstart}
@@ -62,8 +62,8 @@
   </button>
 {:else}
   <button
-    class="flex w-full cursor-grab items-center gap-1 rounded border-2 bg-white px-1.5 py-0.5 text-left text-xs font-semibold shadow-sm transition hover:bg-gray-50"
-    style="border-color: {color}; color: {darker(color)}"
+    class="flex w-full cursor-grab items-center gap-1 rounded px-1.5 py-0.5 text-left text-xs font-semibold shadow-sm transition hover:brightness-105"
+    style="background-color: {lighter(color, 0.6)}; color: {darker(color, 0.5)}"
     draggable="true"
     data-chip="due:{item.id}"
     {ondragstart}
