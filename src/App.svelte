@@ -8,9 +8,11 @@
   import SettingsModal from './lib/components/SettingsModal.svelte';
   import Toolbar from './lib/components/Toolbar.svelte';
   import Tray from './lib/components/Tray.svelte';
+  import { toIcs } from './lib/ics';
   import { slugify } from './lib/model';
   import { decodeShare, encodeShare } from './lib/share';
   import { store } from './lib/store.svelte';
+  import type { Schedule } from './lib/types';
   import { ui } from './lib/ui.svelte';
   import { toYaml } from './lib/yaml-io';
 
@@ -21,18 +23,35 @@
     store.persist();
   });
 
-  // Deep links: #data=<packed schedule> imports/opens that schedule; a bare
-  // #<slug-or-id> (legacy links) selects a stored course by name.
+  // Import a schedule from a link: open the existing copy if we already have
+  // an identical one, otherwise add it as a new course.
+  function importIncoming(incoming: Schedule) {
+    const yaml = toYaml(incoming);
+    const match = store.courseIds().find((i) => toYaml(store.library.courses[i]) === yaml);
+    if (match) store.switchCourse(match);
+    else store.addCourse(incoming);
+  }
+
+  // Deep links: #data=<packed schedule> imports/opens that schedule;
+  // #ics=<packed schedule> additionally downloads it as an iCalendar file;
+  // a bare #<slug-or-id> (legacy links) selects a stored course by name.
   async function resolveHash() {
     const h = decodeURIComponent(location.hash.slice(1));
     if (!h) return;
-    if (h.startsWith('data=')) {
+    if (h.startsWith('data=') || h.startsWith('ics=')) {
+      const ics = h.startsWith('ics=');
       try {
-        const incoming = await decodeShare(h.slice(5));
-        const yaml = toYaml(incoming);
-        const match = store.courseIds().find((i) => toYaml(store.library.courses[i]) === yaml);
-        if (match) store.switchCourse(match);
-        else store.addCourse(incoming);
+        const incoming = await decodeShare(h.slice(ics ? 4 : 5));
+        importIncoming(incoming);
+        if (ics) {
+          const blob = new Blob([toIcs(incoming)], { type: 'text/calendar' });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `${slugify(incoming.course.title) || 'schedule'}.ics`;
+          a.click();
+          URL.revokeObjectURL(url);
+        }
       } catch (e) {
         console.warn('Could not load the schedule from this link:', e);
       }
