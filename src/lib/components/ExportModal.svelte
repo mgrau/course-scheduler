@@ -1,6 +1,7 @@
 <script lang="ts">
   import { toMarkdown, toLatex, type TableStyle } from '../exports';
   import { toIcs } from '../ics';
+  import { slugify } from '../model';
   import { encodeShare } from '../share';
   import { toYaml } from '../yaml-io';
   import { store } from '../store.svelte';
@@ -23,15 +24,11 @@
           : toIcs(store.schedule),
   );
 
-  const filename = $derived(
-    tab === 'yaml'
-      ? 'schedule.yaml'
-      : tab === 'markdown'
-        ? 'schedule.md'
-        : tab === 'latex'
-          ? 'schedule.tex'
-          : 'schedule.ics',
-  );
+  const filename = $derived.by(() => {
+    const base = slugify(store.schedule.course.title) || 'schedule';
+    const ext = tab === 'yaml' ? 'yaml' : tab === 'markdown' ? 'md' : tab === 'latex' ? 'tex' : 'ics';
+    return `${base}.${ext}`;
+  });
 
   async function copyIcsLink() {
     const data = await encodeShare(store.schedule);
