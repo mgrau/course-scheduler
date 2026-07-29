@@ -25,7 +25,7 @@ function b64urlDecode(s: string): Uint8Array {
 }
 
 /*
- * Compact positional encoding, format v3.
+ * Compact positional encoding, format v4.
  * - Dates are day offsets from the term start (ints); optional dates are
  *   offset+1 with 0 = absent, falling back to ISO strings for the rare
  *   out-of-term date whose offset would collide with the sentinel.
@@ -48,7 +48,7 @@ function pack(s: Schedule): unknown[] {
   const ci = (name?: string) =>
     name ? s.categories.findIndex((c) => c.name === name) + 1 : 0;
   return [
-    3,
+    4,
     s.course.title,
     s.course.term.start,
     off(s.course.term.end),
@@ -62,7 +62,13 @@ function pack(s: Schedule): unknown[] {
     ]),
     s.holidays.map((h) => [off(h.start), off(h.end), h.label]),
     s.categories.map((c) => [c.name, c.color.replace(/^#/, '')]),
-    s.activities.map((a) => [a.title, optDate(a.date), ci(a.category), a.description ?? 0]),
+    s.activities.map((a) => [
+      a.title,
+      optDate(a.date),
+      ci(a.category),
+      a.description ?? 0,
+      a.reusable ? 1 : 0,
+    ]),
     s.assignments.map((a) => [
       a.title,
       off(a.due),
@@ -107,12 +113,13 @@ function unpack(v: any[]): Schedule {
       label: String(hl),
     })),
     categories,
-    activities: (acts as any[]).map(([t, d, c, ds]) => ({
+    activities: (acts as any[]).map(([t, d, c, ds, re]) => ({
       id: newId(),
       title: String(t),
       date: optDate(d),
       category: cn(c),
       description: str(ds),
+      reusable: re ? true : undefined,
     })),
     assignments: (asgs as any[]).map(([t, due, asg, time, c, ds]) => ({
       id: newId(),
@@ -182,7 +189,8 @@ export async function decodeShare(data: string): Promise<Schedule> {
   const text = new TextDecoder().decode(bytes);
   if (text.startsWith('[')) {
     const v = JSON.parse(text);
-    if (v[0] === 3) return unpack(v);
+    // v3 lacks the trailing "reusable" flag on activities; unpack tolerates it.
+    if (v[0] === 4 || v[0] === 3) return unpack(v);
     if (v[0] === 2) return unpackV2(v);
     throw new Error('This link was made by a newer version of the scheduler.');
   }

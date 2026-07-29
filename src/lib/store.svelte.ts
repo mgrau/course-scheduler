@@ -135,6 +135,26 @@ class ScheduleStore {
     if (a) a.date = date;
   }
 
+  /**
+   * Drop an activity on a day: reusable tray templates leave a copy behind,
+   * everything else moves.
+   */
+  placeActivity(id: string, date: string) {
+    const a = this.activity(id);
+    if (!a) return;
+    if (a.reusable && !a.date) {
+      // The placed instance is a plain activity, so the tray keeps one template.
+      this.addActivity({
+        title: a.title,
+        description: a.description,
+        category: a.category,
+        date,
+      });
+    } else {
+      a.date = date;
+    }
+  }
+
   moveAssignment(id: string, which: 'assigned' | 'due', date: string) {
     const a = this.assignment(id);
     if (a) a[which] = date;

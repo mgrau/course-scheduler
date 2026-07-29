@@ -57,7 +57,7 @@
     if (!raw) return;
     e.preventDefault();
     const { kind, id } = JSON.parse(raw);
-    if (kind === 'activity') store.moveActivity(id, dateStr);
+    if (kind === 'activity') store.placeActivity(id, dateStr);
     else store.moveAssignment(id, kind, dateStr);
   }
 

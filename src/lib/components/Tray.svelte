@@ -47,7 +47,8 @@
     {/each}
   </div>
   <p class="mt-auto hidden pt-3 text-[11px] leading-snug text-gray-400 md:block">
-    Drag activities onto class days, or drop them here to unschedule. These can be printed as
-    cut-out cards.
+    Drag activities onto the calendar, or drop them here to unschedule. Items marked
+    <span class="font-medium">reusable</span> stay here when dragged out, so they can be placed
+    repeatedly. These can be printed as cut-out cards.
   </p>
 </aside>

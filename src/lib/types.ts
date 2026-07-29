@@ -41,6 +41,8 @@ export interface Activity {
   category?: string;
   /** Undefined = unscheduled (lives in the tray) */
   date?: string;
+  /** Tray template: dragging it onto the calendar leaves the original behind. */
+  reusable?: boolean;
 }
 
 export interface Assignment {

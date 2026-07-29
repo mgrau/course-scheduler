@@ -20,6 +20,7 @@
       '',
   );
   let date = $state(editActivity?.date ?? (st?.mode === 'new' ? (st.date ?? '') : ''));
+  let reusable = $state(editActivity?.reusable ?? false);
   let assigned = $state(editAssignment?.assigned ?? (st?.mode === 'new' ? (st.date ?? '') : ''));
   let due = $state(editAssignment?.due ?? '');
   let time = $state(editAssignment?.time ?? '');
@@ -37,7 +38,7 @@
       category: category || undefined,
     };
     if (type === 'activity') {
-      const data = { ...common, date: date || undefined };
+      const data = { ...common, date: date || undefined, reusable: reusable || undefined };
       if (editActivity) Object.assign(editActivity, data);
       else store.addActivity(data);
       // Converted from an assignment? Not supported; keep it simple.
@@ -124,6 +125,17 @@
           class="mt-1 w-full rounded border border-gray-300 px-2 py-1.5"
           bind:value={date}
         />
+      </label>
+
+      <label class="flex items-start gap-2 text-sm">
+        <input type="checkbox" class="mt-0.5" bind:checked={reusable} />
+        <span>
+          <span class="font-medium text-gray-700">Reusable</span>
+          <span class="block text-xs text-gray-400">
+            Keeps a copy in the unscheduled tray, so it can be added to the calendar as many
+            times as you like.
+          </span>
+        </span>
       </label>
     {:else}
       <div class="grid grid-cols-2 gap-3">

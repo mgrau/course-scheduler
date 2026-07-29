@@ -38,7 +38,8 @@ export function sampleSchedule(): Schedule {
       { id: newId(), title: 'Lab 1: Electric fields', category: 'lab', date: '2026-08-27' },
       { id: newId(), title: "Gauss's law", category: 'lecture', date: '2026-09-02' },
       { id: newId(), title: 'Midterm 1', category: 'exam', date: '2026-10-02' },
-      { id: newId(), title: 'Review session', category: 'lecture' },
+      { id: newId(), title: 'Review session', category: 'lecture', reusable: true },
+      { id: newId(), title: 'Quiz', category: 'exam', reusable: true },
       { id: newId(), title: 'Midterm 2', category: 'exam' },
     ],
     assignments: [

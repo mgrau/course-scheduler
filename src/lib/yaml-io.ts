@@ -63,6 +63,7 @@ export function fromYaml(text: string): Schedule {
       description: a.description ? String(a.description) : undefined,
       category: a.category ? String(a.category) : undefined,
       date: dstr(a.date),
+      reusable: a.reusable ? true : undefined,
     });
   });
 

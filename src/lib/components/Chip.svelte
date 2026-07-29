@@ -3,6 +3,7 @@
   import { store } from '../store.svelte';
   import { ui } from '../ui.svelte';
   import { categoryColor, darker, hasConflict, lighter } from '../model';
+  import Icon from './Icon.svelte';
 
   let {
     kind,
@@ -23,12 +24,16 @@
   );
   const dueTime = $derived(kind === 'due' ? ((item as Assignment).time ?? '') : '');
   const showDesc = $derived(size >= 36 && !!item.description);
+  // A reusable, unscheduled activity is a template: dragging it copies.
+  const template = $derived(
+    kind === 'activity' && !!(item as Activity).reusable && !(item as Activity).date,
+  );
 
   function ondragstart(e: DragEvent) {
     if (!e.dataTransfer) return;
     e.dataTransfer.setData('application/x-chip', JSON.stringify({ kind, id: item.id }));
     if (kind === 'activity') e.dataTransfer.setData('application/x-activity', '1');
-    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.effectAllowed = template ? 'copy' : 'move';
   }
 
   function onclick(e: MouseEvent) {
@@ -50,9 +55,16 @@
     {onclick}
     title={conflict
       ? `${item.title} — class is cancelled on this day!`
-      : (item.description ?? item.title)}
+      : template
+        ? `${item.title} — reusable: drag out as many copies as you like`
+        : (item.description ?? item.title)}
   >
-    <span class="w-full truncate">{prefix}{item.title}</span>
+    <span class="flex w-full items-center gap-1">
+      <span class="truncate">{prefix}{item.title}</span>
+      {#if template}
+        <Icon name="copy" class="ml-auto h-3 w-3 opacity-70" />
+      {/if}
+    </span>
     {#if showDesc}
       <span class="w-full truncate text-[10px] font-normal opacity-75">{item.description}</span>
     {/if}
