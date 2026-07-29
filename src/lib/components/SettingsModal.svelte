@@ -20,6 +20,59 @@
     arr.splice(j, 0, item);
   }
 
+  // Drag-to-reorder. A row is only draggable once its grip is pressed, so the
+  // inputs inside it stay selectable.
+  type ListKind = 'cat' | 'hol';
+  let armed = $state('');
+  let dragKind = $state<ListKind | null>(null);
+  let dragFrom = $state(-1);
+  /** Insertion slot: 0…length, or -1 when nothing is hovered. */
+  let dropSlot = $state(-1);
+
+  function startDrag(e: DragEvent, kind: ListKind, i: number) {
+    dragKind = kind;
+    dragFrom = i;
+    dropSlot = -1;
+    if (e.dataTransfer) {
+      e.dataTransfer.setData('application/x-reorder', `${kind}:${i}`);
+      e.dataTransfer.effectAllowed = 'move';
+    }
+  }
+
+  function overRow(e: DragEvent, kind: ListKind, i: number) {
+    if (dragKind !== kind) return;
+    e.preventDefault();
+    const r = (e.currentTarget as HTMLElement).getBoundingClientRect();
+    dropSlot = e.clientY < r.top + r.height / 2 ? i : i + 1;
+  }
+
+  function endDrag() {
+    armed = '';
+    dragKind = null;
+    dragFrom = -1;
+    dropSlot = -1;
+  }
+
+  function dropRow(e: DragEvent, kind: ListKind, arr: unknown[]) {
+    if (dragKind !== kind || dropSlot < 0) return;
+    e.preventDefault();
+    // The slot index shifts down once the dragged row is lifted out.
+    const to = dropSlot > dragFrom ? dropSlot - 1 : dropSlot;
+    if (to !== dragFrom) {
+      const [item] = arr.splice(dragFrom, 1);
+      arr.splice(to, 0, item);
+    }
+    endDrag();
+  }
+
+  /** Insertion line drawn as an inset shadow, so it never shifts the layout. */
+  function indicator(kind: ListKind, i: number, len: number): string {
+    if (dragKind !== kind || dropSlot < 0) return '';
+    if (dropSlot === i) return 'box-shadow: inset 0 2px 0 0 #0ea5e9';
+    if (dropSlot === len && i === len - 1) return 'box-shadow: inset 0 -2px 0 0 #0ea5e9';
+    return '';
+  }
+
   /** A holiday is single-day until it's given a different end date. */
   function setStart(h: Holiday, value: string) {
     const single = h.start === h.end;
@@ -32,27 +85,24 @@
   }
 </script>
 
-{#snippet reorder(arr: unknown[], i: number)}
-  <div class="flex shrink-0 flex-col text-gray-400">
-    <button
-      type="button"
-      class="rounded px-0.5 hover:bg-gray-100 hover:text-gray-700 disabled:opacity-25 disabled:hover:bg-transparent"
-      disabled={i === 0}
-      aria-label="Move up"
-      onclick={() => move(arr, i, -1)}
-    >
-      <Icon name="chevronUp" class="h-3 w-3" />
-    </button>
-    <button
-      type="button"
-      class="rounded px-0.5 hover:bg-gray-100 hover:text-gray-700 disabled:opacity-25 disabled:hover:bg-transparent"
-      disabled={i === arr.length - 1}
-      aria-label="Move down"
-      onclick={() => move(arr, i, 1)}
-    >
-      <Icon name="chevronDown" class="h-3 w-3" />
-    </button>
-  </div>
+{#snippet grip(kind: 'cat' | 'hol', arr: unknown[], i: number)}
+  <button
+    type="button"
+    class="shrink-0 cursor-grab rounded px-0.5 py-1 text-gray-300 hover:bg-gray-100 hover:text-gray-600 active:cursor-grabbing"
+    aria-label="Drag to reorder (or use the arrow keys)"
+    onmousedown={() => (armed = `${kind}:${i}`)}
+    onkeydown={(e) => {
+      if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        move(arr, i, -1);
+      } else if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        move(arr, i, 1);
+      }
+    }}
+  >
+    <Icon name="grip" class="h-4 w-4" />
+  </button>
 {/snippet}
 
 <Modal title="Schedule settings" onclose={() => (ui.settings = false)} wide>
@@ -159,8 +209,19 @@
       <h3 class="mb-2 font-semibold text-gray-700">Holidays &amp; cancellations</h3>
       <div class="space-y-2">
         {#each s.holidays as h, i (i)}
-          <div class="flex flex-wrap items-center gap-2">
-            {@render reorder(s.holidays, i)}
+          <!-- svelte-ignore a11y_no_static_element_interactions -->
+          <div
+            class="flex flex-wrap items-center gap-2 rounded {dragKind === 'hol' && dragFrom === i
+              ? 'opacity-40'
+              : ''}"
+            style={indicator('hol', i, s.holidays.length)}
+            draggable={armed === `hol:${i}`}
+            ondragstart={(e) => startDrag(e, 'hol', i)}
+            ondragover={(e) => overRow(e, 'hol', i)}
+            ondrop={(e) => dropRow(e, 'hol', s.holidays)}
+            ondragend={endDrag}
+          >
+            {@render grip('hol', s.holidays, i)}
             <input
               class="w-40 rounded border border-gray-300 px-2 py-1"
               placeholder="Label"
@@ -218,8 +279,19 @@
       <h3 class="mb-2 font-semibold text-gray-700">Categories</h3>
       <div class="space-y-2">
         {#each s.categories as c, i (i)}
-          <div class="flex items-center gap-2">
-            {@render reorder(s.categories, i)}
+          <!-- svelte-ignore a11y_no_static_element_interactions -->
+          <div
+            class="flex items-center gap-2 rounded {dragKind === 'cat' && dragFrom === i
+              ? 'opacity-40'
+              : ''}"
+            style={indicator('cat', i, s.categories.length)}
+            draggable={armed === `cat:${i}`}
+            ondragstart={(e) => startDrag(e, 'cat', i)}
+            ondragover={(e) => overRow(e, 'cat', i)}
+            ondrop={(e) => dropRow(e, 'cat', s.categories)}
+            ondragend={endDrag}
+          >
+            {@render grip('cat', s.categories, i)}
             <input
               type="color"
               class="w-10 cursor-pointer self-stretch rounded-md"
