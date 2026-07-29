@@ -1,7 +1,9 @@
 <script lang="ts">
-  import { dayOrder } from '../dates';
+  import { addDays, dayOrder, fmtDate, parseDate } from '../dates';
+  import type { Holiday } from '../types';
   import { store } from '../store.svelte';
   import { ui } from '../ui.svelte';
+  import Icon from './Icon.svelte';
   import Modal from './Modal.svelte';
 
   const s = $derived(store.schedule);
@@ -10,7 +12,48 @@
     if (meeting.days.includes(day)) meeting.days = meeting.days.filter((d) => d !== day);
     else meeting.days = [...meeting.days, day];
   }
+
+  function move(arr: unknown[], i: number, dir: -1 | 1) {
+    const j = i + dir;
+    if (j < 0 || j >= arr.length) return;
+    const [item] = arr.splice(i, 1);
+    arr.splice(j, 0, item);
+  }
+
+  /** A holiday is single-day until it's given a different end date. */
+  function setStart(h: Holiday, value: string) {
+    const single = h.start === h.end;
+    h.start = value;
+    if (single || h.end < value) h.end = value;
+  }
+
+  function makeMultiDay(h: Holiday) {
+    h.end = fmtDate(addDays(parseDate(h.start), 1));
+  }
 </script>
+
+{#snippet reorder(arr: unknown[], i: number)}
+  <div class="flex shrink-0 flex-col text-gray-400">
+    <button
+      type="button"
+      class="rounded px-0.5 hover:bg-gray-100 hover:text-gray-700 disabled:opacity-25 disabled:hover:bg-transparent"
+      disabled={i === 0}
+      aria-label="Move up"
+      onclick={() => move(arr, i, -1)}
+    >
+      <Icon name="chevronUp" class="h-3 w-3" />
+    </button>
+    <button
+      type="button"
+      class="rounded px-0.5 hover:bg-gray-100 hover:text-gray-700 disabled:opacity-25 disabled:hover:bg-transparent"
+      disabled={i === arr.length - 1}
+      aria-label="Move down"
+      onclick={() => move(arr, i, 1)}
+    >
+      <Icon name="chevronDown" class="h-3 w-3" />
+    </button>
+  </div>
+{/snippet}
 
 <Modal title="Schedule settings" onclose={() => (ui.settings = false)} wide>
   <div class="space-y-6 text-sm">
@@ -117,6 +160,7 @@
       <div class="space-y-2">
         {#each s.holidays as h, i (i)}
           <div class="flex flex-wrap items-center gap-2">
+            {@render reorder(s.holidays, i)}
             <input
               class="w-40 rounded border border-gray-300 px-2 py-1"
               placeholder="Label"
@@ -125,14 +169,33 @@
             <input
               type="date"
               class="rounded border border-gray-300 px-1.5 py-1"
-              bind:value={h.start}
+              value={h.start}
+              oninput={(e) => setStart(h, e.currentTarget.value)}
             />
-            –
-            <input
-              type="date"
-              class="rounded border border-gray-300 px-1.5 py-1"
-              bind:value={h.end}
-            />
+            {#if h.start !== h.end}
+              <span class="text-gray-400">–</span>
+              <input
+                type="date"
+                class="rounded border border-gray-300 px-1.5 py-1"
+                min={h.start}
+                bind:value={h.end}
+              />
+              <button
+                type="button"
+                class="rounded p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-700"
+                title="Make this a single day"
+                aria-label="Make this a single day"
+                onclick={() => (h.end = h.start)}
+              >
+                <Icon name="x" class="h-3 w-3" />
+              </button>
+            {:else}
+              <button
+                type="button"
+                class="text-xs font-medium text-blue-600 hover:underline"
+                onclick={() => makeMultiDay(h)}>+ end date</button
+              >
+            {/if}
             <button
               type="button"
               class="ml-auto text-xs text-red-500 hover:underline"
@@ -156,6 +219,7 @@
       <div class="space-y-2">
         {#each s.categories as c, i (i)}
           <div class="flex items-center gap-2">
+            {@render reorder(s.categories, i)}
             <input
               type="color"
               class="w-10 cursor-pointer self-stretch rounded-md"
