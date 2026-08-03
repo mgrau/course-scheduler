@@ -116,6 +116,14 @@
       <button class={btn} onclick={() => (ui.printDialog = true)}>
         <Icon name="printer" />Print
       </button>
+      <button
+        class={btn}
+        onclick={() => (ui.help = true)}
+        title="Help & shortcuts (?)"
+        aria-label="Help"
+      >
+        <Icon name="help" />
+      </button>
     </nav>
     <input
       bind:this={fileInput}

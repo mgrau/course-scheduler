@@ -5,6 +5,7 @@
   import ConflictsModal from './lib/components/ConflictsModal.svelte';
   import CoursesModal from './lib/components/CoursesModal.svelte';
   import ExportModal from './lib/components/ExportModal.svelte';
+  import HelpModal from './lib/components/HelpModal.svelte';
   import ItemModal from './lib/components/ItemModal.svelte';
   import PrintDialog from './lib/components/PrintDialog.svelte';
   import PrintView from './lib/components/PrintView.svelte';
@@ -31,7 +32,7 @@
   // Theme: saved preference, else the system setting; class on <html>.
   const THEME_KEY = 'course-scheduler:theme';
   const savedTheme = localStorage.getItem(THEME_KEY);
-  ui.dark = savedTheme ? savedTheme === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;
+  ui.dark = savedTheme === 'dark'; // light unless explicitly switched
   $effect(() => {
     document.documentElement.classList.toggle('dark', ui.dark);
     localStorage.setItem(THEME_KEY, ui.dark ? 'dark' : 'light');
@@ -52,7 +53,8 @@
     ui.exporter ||
     ui.printDialog ||
     ui.webImport ||
-    ui.conflicts;
+    ui.conflicts ||
+    ui.help;
 
   // Global keys: undo/redo everywhere; arrows/Enter navigate the calendar.
   function onKeydown(e: KeyboardEvent) {
@@ -74,6 +76,11 @@
     }
 
     if (inField || anyModalOpen() || e.metaKey || e.ctrlKey || e.altKey) return;
+    if (e.key === '?') {
+      e.preventDefault();
+      ui.help = true;
+      return;
+    }
     const term = store.schedule.course.term;
     const deltas: Record<string, number> = {
       ArrowLeft: -1,
@@ -177,6 +184,9 @@
 {/if}
 {#if ui.conflicts}
   <ConflictsModal />
+{/if}
+{#if ui.help}
+  <HelpModal />
 {/if}
 {#if ui.exporter}
   <ExportModal />

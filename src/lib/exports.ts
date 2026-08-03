@@ -177,12 +177,19 @@ function chip(s: Schedule, title: string, category: string | undefined, bold = f
 }
 
 export function toHtml(s: Schedule, style: TableStyle): string {
-  const lines: string[] = [`<table style="border-collapse:collapse">`];
+  const caption =
+    style === 'meeting'
+      ? `Course schedule for ${s.course.title}: activities and assignments for each class day.`
+      : `Course schedule for ${s.course.title}: activities and assignment due dates by week.`;
+  const lines: string[] = [
+    `<table style="border-collapse:collapse">`,
+    `<caption style="padding:4px 8px;text-align:left;font-weight:bold">${htmlEscape(caption)}</caption>`,
+  ];
   if (style === 'meeting') {
     lines.push(
-      `<thead><tr><th style="${TH}">Date</th><th style="${TH}">Day</th>` +
-        `<th style="${TH}">Activities</th><th style="${TH}">Assigned</th>` +
-        `<th style="${TH}">Due</th></tr></thead>`,
+      `<thead><tr><th scope="col" style="${TH}">Date</th><th scope="col" style="${TH}">Day</th>` +
+        `<th scope="col" style="${TH}">Activities</th><th scope="col" style="${TH}">Assigned</th>` +
+        `<th scope="col" style="${TH}">Due</th></tr></thead>`,
     );
     lines.push('<tbody>');
     for (const r of dayRows(s)) {
@@ -202,8 +209,8 @@ export function toHtml(s: Schedule, style: TableStyle): string {
     }
   } else {
     lines.push(
-      `<thead><tr><th style="${TH}">Week</th><th style="${TH}">Dates</th>` +
-        `<th style="${TH}">Activities</th><th style="${TH}">Due</th></tr></thead>`,
+      `<thead><tr><th scope="col" style="${TH}">Week</th><th scope="col" style="${TH}">Dates</th>` +
+        `<th scope="col" style="${TH}">Activities</th><th scope="col" style="${TH}">Due</th></tr></thead>`,
     );
     lines.push('<tbody>');
     for (const w of weekRows(s)) {

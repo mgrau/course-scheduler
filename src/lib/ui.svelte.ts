@@ -10,6 +10,7 @@ export const ui = $state({
   courses: false,
   webImport: false,
   conflicts: false,
+  help: false,
   /** Dark theme active. */
   dark: false,
   /** Keyboard-focused day on the calendar (YYYY-MM-DD), or null. */
