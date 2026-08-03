@@ -21,11 +21,12 @@
     }
   }
 
+  // Copies a self-contained link without touching the address bar.
   async function copyLink() {
     const data = await encodeShare(store.schedule);
-    const url = `${location.origin}${location.pathname}#data=${data}`;
-    history.replaceState(null, '', url);
-    await navigator.clipboard.writeText(url);
+    await navigator.clipboard.writeText(
+      `${location.origin}${location.pathname}#data=${data}`,
+    );
     copied = true;
     setTimeout(() => (copied = false), 1500);
   }
@@ -60,12 +61,6 @@
       aria-label="Course title"
     />
     <nav class="flex w-full items-center gap-1.5 overflow-x-auto sm:w-auto">
-      <button
-        class="flex shrink-0 items-center gap-1.5 rounded-lg bg-blue-600 px-2.5 py-1.5 text-sm font-medium text-white shadow-sm hover:bg-blue-500"
-        onclick={() => (ui.editor = { mode: 'new' })}
-      >
-        <Icon name="plus" />New item
-      </button>
       <button class={btn} onclick={copyLink}>
         <Icon name={copied ? 'check' : 'link'} />{copied ? 'Copied!' : 'Copy link'}
       </button>

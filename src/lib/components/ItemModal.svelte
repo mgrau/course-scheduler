@@ -2,6 +2,7 @@
   import { store } from '../store.svelte';
   import { ui } from '../ui.svelte';
   import Modal from './Modal.svelte';
+  import TimeInput from './TimeInput.svelte';
 
   // The modal is created fresh each time ui.editor becomes non-null,
   // so initializing local state from it here is safe.
@@ -159,10 +160,12 @@
       </div>
       <label class="block text-sm">
         <span class="font-medium text-gray-700">Due time</span>
-        <input
-          type="time"
-          class="mt-1 w-full rounded border border-gray-300 px-2 py-1.5"
+        <span class="ml-1 text-xs text-gray-400">(optional)</span>
+        <TimeInput
+          wrapper="mt-1 w-full"
+          class="w-full rounded border border-gray-300 px-2 py-1.5"
           bind:value={time}
+          placeholder="11:59 PM"
         />
       </label>
     {/if}

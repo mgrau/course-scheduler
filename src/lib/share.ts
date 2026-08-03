@@ -24,6 +24,7 @@ function b64urlDecode(s: string): Uint8Array {
   return Uint8Array.from(bin, (c) => c.charCodeAt(0));
 }
 
+
 /*
  * Compact positional encoding, format v4.
  * - Dates are day offsets from the term start (ints); optional dates are

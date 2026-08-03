@@ -1,10 +1,12 @@
 <script lang="ts">
+  import { flip } from 'svelte/animate';
   import { addDays, dayOrder, fmtDate, parseDate } from '../dates';
   import type { Holiday } from '../types';
   import { store } from '../store.svelte';
   import { ui } from '../ui.svelte';
   import Icon from './Icon.svelte';
   import Modal from './Modal.svelte';
+  import TimeInput from './TimeInput.svelte';
 
   const s = $derived(store.schedule);
 
@@ -20,58 +22,52 @@
     arr.splice(j, 0, item);
   }
 
-  // Drag-to-reorder. A row is only draggable once its grip is pressed, so the
-  // inputs inside it stay selectable.
+  /*
+   * Live reordering: pressing a grip picks the row up, and moving the pointer
+   * splices it through the list so the rows visibly shuffle under the cursor.
+   * Row bands are measured once at pick-up, so the FLIP animation that plays
+   * during a swap can't feed back into the hit-testing.
+   */
   type ListKind = 'cat' | 'hol';
-  let armed = $state('');
   let dragKind = $state<ListKind | null>(null);
-  let dragFrom = $state(-1);
-  /** Insertion slot: 0…length, or -1 when nothing is hovered. */
-  let dropSlot = $state(-1);
+  let dragIndex = $state(-1);
+  const lists: Partial<Record<ListKind, HTMLElement>> = {};
+  let bands: number[] = [];
+  let listTop = 0;
 
-  function startDrag(e: DragEvent, kind: ListKind, i: number) {
+  const listOf = (kind: ListKind) => (kind === 'cat' ? s.categories : s.holidays);
+
+  function startDrag(e: PointerEvent, kind: ListKind, i: number) {
+    const container = lists[kind];
+    if (!container) return;
+    e.preventDefault();
+    const box = container.getBoundingClientRect();
+    listTop = box.top;
+    bands = [...container.children].map((el) => el.getBoundingClientRect().bottom - box.top);
     dragKind = kind;
-    dragFrom = i;
-    dropSlot = -1;
-    if (e.dataTransfer) {
-      e.dataTransfer.setData('application/x-reorder', `${kind}:${i}`);
-      e.dataTransfer.effectAllowed = 'move';
-    }
+    dragIndex = i;
   }
 
-  function overRow(e: DragEvent, kind: ListKind, i: number) {
-    if (dragKind !== kind) return;
-    e.preventDefault();
-    const r = (e.currentTarget as HTMLElement).getBoundingClientRect();
-    dropSlot = e.clientY < r.top + r.height / 2 ? i : i + 1;
+  function onPointerMove(e: PointerEvent) {
+    if (!dragKind) return;
+    const y = e.clientY - listTop;
+    let target = bands.findIndex((bottom) => y < bottom);
+    if (target === -1) target = bands.length - 1;
+    if (target !== dragIndex && target >= 0) {
+      // Element type doesn't matter here — the rows are only being reordered.
+      const arr = listOf(dragKind) as unknown[];
+      const [item] = arr.splice(dragIndex, 1);
+      arr.splice(target, 0, item);
+      dragIndex = target;
+    }
   }
 
   function endDrag() {
-    armed = '';
     dragKind = null;
-    dragFrom = -1;
-    dropSlot = -1;
+    dragIndex = -1;
   }
 
-  function dropRow(e: DragEvent, kind: ListKind, arr: unknown[]) {
-    if (dragKind !== kind || dropSlot < 0) return;
-    e.preventDefault();
-    // The slot index shifts down once the dragged row is lifted out.
-    const to = dropSlot > dragFrom ? dropSlot - 1 : dropSlot;
-    if (to !== dragFrom) {
-      const [item] = arr.splice(dragFrom, 1);
-      arr.splice(to, 0, item);
-    }
-    endDrag();
-  }
-
-  /** Insertion line drawn as an inset shadow, so it never shifts the layout. */
-  function indicator(kind: ListKind, i: number, len: number): string {
-    if (dragKind !== kind || dropSlot < 0) return '';
-    if (dropSlot === i) return 'box-shadow: inset 0 2px 0 0 #0ea5e9';
-    if (dropSlot === len && i === len - 1) return 'box-shadow: inset 0 -2px 0 0 #0ea5e9';
-    return '';
-  }
+  const lifted = (kind: ListKind, i: number) => dragKind === kind && dragIndex === i;
 
   /** A holiday is single-day until it's given a different end date. */
   function setStart(h: Holiday, value: string) {
@@ -88,9 +84,9 @@
 {#snippet grip(kind: 'cat' | 'hol', arr: unknown[], i: number)}
   <button
     type="button"
-    class="shrink-0 cursor-grab rounded px-0.5 py-1 text-gray-300 hover:bg-gray-100 hover:text-gray-600 active:cursor-grabbing"
+    class="shrink-0 cursor-grab touch-none rounded px-0.5 py-1 text-gray-300 hover:bg-gray-100 hover:text-gray-600 active:cursor-grabbing"
     aria-label="Drag to reorder (or use the arrow keys)"
-    onmousedown={() => (armed = `${kind}:${i}`)}
+    onpointerdown={(e) => startDrag(e, kind, i)}
     onkeydown={(e) => {
       if (e.key === 'ArrowUp') {
         e.preventDefault();
@@ -105,8 +101,10 @@
   </button>
 {/snippet}
 
+<svelte:window onpointermove={onPointerMove} onpointerup={endDrag} onpointercancel={endDrag} />
+
 <Modal title="Schedule settings" onclose={() => (ui.settings = false)} wide>
-  <div class="space-y-6 text-sm">
+  <div class="space-y-6 text-sm {dragKind ? 'select-none' : ''}">
     <section>
       <h3 class="mb-2 font-semibold text-gray-700">Course</h3>
       <label class="block">
@@ -173,17 +171,9 @@
                 >
               {/each}
             </div>
-            <input
-              type="time"
-              class="rounded border border-gray-300 px-1.5 py-1"
-              bind:value={meeting.start}
-            />
+            <TimeInput wrapper="w-28" bind:value={meeting.start} />
             –
-            <input
-              type="time"
-              class="rounded border border-gray-300 px-1.5 py-1"
-              bind:value={meeting.end}
-            />
+            <TimeInput wrapper="w-28" bind:value={meeting.end} placeholder="10:50 AM" />
             <input
               class="w-24 rounded border border-gray-300 px-2 py-1"
               placeholder="Label"
@@ -207,19 +197,13 @@
 
     <section>
       <h3 class="mb-2 font-semibold text-gray-700">Holidays &amp; cancellations</h3>
-      <div class="space-y-2">
-        {#each s.holidays as h, i (i)}
-          <!-- svelte-ignore a11y_no_static_element_interactions -->
+      <div class="space-y-2" bind:this={lists.hol}>
+        {#each s.holidays as h, i (h)}
           <div
-            class="flex flex-wrap items-center gap-2 rounded {dragKind === 'hol' && dragFrom === i
-              ? 'opacity-40'
+            class="flex flex-wrap items-center gap-2 rounded px-1 py-0.5 {lifted('hol', i)
+              ? 'relative z-10 bg-sky-50 shadow-md ring-1 ring-sky-300'
               : ''}"
-            style={indicator('hol', i, s.holidays.length)}
-            draggable={armed === `hol:${i}`}
-            ondragstart={(e) => startDrag(e, 'hol', i)}
-            ondragover={(e) => overRow(e, 'hol', i)}
-            ondrop={(e) => dropRow(e, 'hol', s.holidays)}
-            ondragend={endDrag}
+            animate:flip={{ duration: 160 }}
           >
             {@render grip('hol', s.holidays, i)}
             <input
@@ -277,19 +261,13 @@
 
     <section>
       <h3 class="mb-2 font-semibold text-gray-700">Categories</h3>
-      <div class="space-y-2">
-        {#each s.categories as c, i (i)}
-          <!-- svelte-ignore a11y_no_static_element_interactions -->
+      <div class="space-y-2" bind:this={lists.cat}>
+        {#each s.categories as c, i (c)}
           <div
-            class="flex items-center gap-2 rounded {dragKind === 'cat' && dragFrom === i
-              ? 'opacity-40'
+            class="flex items-center gap-2 rounded px-1 py-0.5 {lifted('cat', i)
+              ? 'relative z-10 bg-sky-50 shadow-md ring-1 ring-sky-300'
               : ''}"
-            style={indicator('cat', i, s.categories.length)}
-            draggable={armed === `cat:${i}`}
-            ondragstart={(e) => startDrag(e, 'cat', i)}
-            ondragover={(e) => overRow(e, 'cat', i)}
-            ondrop={(e) => dropRow(e, 'cat', s.categories)}
-            ondragend={endDrag}
+            animate:flip={{ duration: 160 }}
           >
             {@render grip('cat', s.categories, i)}
             <input

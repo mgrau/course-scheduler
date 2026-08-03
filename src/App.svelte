@@ -10,7 +10,7 @@
   import Tray from './lib/components/Tray.svelte';
   import { toIcs } from './lib/ics';
   import { slugify } from './lib/model';
-  import { decodeShare, encodeShare } from './lib/share';
+  import { decodeShare } from './lib/share';
   import { store } from './lib/store.svelte';
   import type { Schedule } from './lib/types';
   import { ui } from './lib/ui.svelte';
@@ -35,13 +35,15 @@
   // Deep links: #data=<packed schedule> imports/opens that schedule;
   // #ics=<packed schedule> additionally downloads it as an iCalendar file;
   // a bare #<slug-or-id> (legacy links) selects a stored course by name.
+  // The hash is cleared afterwards so the address bar stays clean.
   async function resolveHash() {
     const h = decodeURIComponent(location.hash.slice(1));
     if (!h) return;
-    if (h.startsWith('data=') || h.startsWith('ics=')) {
-      const ics = h.startsWith('ics=');
+    const prefix = ['data=', 'ics='].find((p) => h.startsWith(p));
+    if (prefix) {
+      const ics = prefix === 'ics=';
       try {
-        const incoming = await decodeShare(h.slice(ics ? 4 : 5));
+        const incoming = await decodeShare(h.slice(prefix.length));
         importIncoming(incoming);
         if (ics) {
           const blob = new Blob([toIcs(incoming)], { type: 'text/calendar' });
@@ -62,21 +64,9 @@
         ids.find((i) => slugify(store.library.courses[i].course.title) === h);
       if (id) store.switchCourse(id);
     }
+    history.replaceState(null, '', location.pathname + location.search);
   }
   resolveHash();
-
-  // The URL bar always carries the current schedule, so copying the address
-  // is copying a share link.
-  let hashTimer: ReturnType<typeof setTimeout> | undefined;
-  $effect(() => {
-    JSON.stringify(store.schedule);
-    clearTimeout(hashTimer);
-    hashTimer = setTimeout(async () => {
-      const data = await encodeShare(store.schedule);
-      history.replaceState(null, '', `#data=${data}`);
-    }, 400);
-    return () => clearTimeout(hashTimer);
-  });
 </script>
 
 <svelte:window onhashchange={resolveHash} />

@@ -32,13 +32,13 @@
   {ondrop}
   ondragleave={() => (dragOver = false)}
 >
-  <div class="mb-2 flex items-center justify-between">
+  <div class="mb-2 flex items-center justify-between gap-2">
     <h2 class="text-sm font-semibold text-gray-700">Unscheduled</h2>
     <button
-      class="flex items-center gap-1 rounded bg-blue-600 px-2 py-0.5 text-xs font-medium text-white hover:bg-blue-500"
+      class="flex shrink-0 items-center gap-1 rounded-lg bg-blue-600 px-2 py-1 text-xs font-medium text-white shadow-sm hover:bg-blue-500"
       onclick={() => (ui.editor = { mode: 'new' })}
     >
-      <Icon name="plus" class="h-3 w-3" />Add
+      <Icon name="plus" class="h-3.5 w-3.5" />New item
     </button>
   </div>
   <div class="grid max-h-32 grid-cols-2 gap-1 overflow-y-auto sm:grid-cols-3 md:block md:max-h-none md:space-y-1">
