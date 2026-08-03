@@ -86,6 +86,8 @@ export function fromYaml(text: string): Schedule {
     start: m.start ? String(m.start) : undefined,
     end: m.end ? String(m.end) : undefined,
     label: m.label ? String(m.label) : undefined,
+    from: dstr(m.from),
+    until: dstr(m.until),
   }));
 
   const categories = (raw.categories ?? []).map((c: any) => ({

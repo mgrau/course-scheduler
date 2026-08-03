@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { findConflicts } from '../model';
   import { encodeShare } from '../share';
   import { store } from '../store.svelte';
   import { ui } from '../ui.svelte';
@@ -7,6 +8,7 @@
 
   let fileInput: HTMLInputElement;
   let copied = $state(false);
+  const conflictCount = $derived(findConflicts(store.schedule).length);
 
   async function importFile(e: Event) {
     const input = e.currentTarget as HTMLInputElement;
@@ -61,6 +63,15 @@
       aria-label="Course title"
     />
     <nav class="flex w-full items-center gap-1.5 overflow-x-auto sm:w-auto">
+      {#if conflictCount > 0}
+        <button
+          class="flex shrink-0 items-center gap-1.5 rounded-lg border border-red-300 bg-red-50 px-2.5 py-1.5 text-sm font-medium text-red-700 shadow-sm hover:bg-red-100"
+          onclick={() => (ui.conflicts = true)}
+          title="{conflictCount} possible conflict{conflictCount === 1 ? '' : 's'} — click to review"
+        >
+          <Icon name="warning" />{conflictCount}
+        </button>
+      {/if}
       <button
         class="{btn} disabled:opacity-35"
         onclick={() => store.undo()}

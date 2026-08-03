@@ -1,6 +1,7 @@
 <script lang="ts">
   import { flip } from 'svelte/animate';
   import { addDays, dayOrder, fmtDate, parseDate } from '../dates';
+  import { shiftSchedule } from '../model';
   import type { Holiday } from '../types';
   import { store } from '../store.svelte';
   import { ui } from '../ui.svelte';
@@ -69,6 +70,19 @@
 
   const lifted = (kind: ListKind, i: number) => dragKind === kind && dragIndex === i;
 
+  /**
+   * Moving the term start carries the whole schedule with it: the end date,
+   * holidays, and every dated item shift by the same number of days (one
+   * undo step). Moving the end date alone just lengthens/shortens the term.
+   */
+  function changeTermStart(value: string) {
+    if (!value || value === s.course.term.start) return;
+    const days = Math.round(
+      (parseDate(value).getTime() - parseDate(s.course.term.start).getTime()) / 86400000,
+    );
+    shiftSchedule(s, days);
+  }
+
   /** A holiday is single-day until it's given a different end date. */
   function setStart(h: Holiday, value: string) {
     const single = h.start === h.end;
@@ -120,7 +134,8 @@
           <input
             type="date"
             class="mt-0.5 w-full rounded border border-gray-300 px-2 py-1.5"
-            bind:value={s.course.term.start}
+            value={s.course.term.start}
+            onchange={(e) => changeTermStart(e.currentTarget.value)}
           />
         </label>
         <label class="block">
@@ -152,6 +167,10 @@
           </select>
         </label>
       </div>
+      <p class="mt-1 text-[11px] text-gray-400">
+        Moving the term start shifts everything — activities, assignments, and holidays — with
+        it (undo reverses). Moving the end only lengthens or shortens the term.
+      </p>
     </section>
 
     <section>
@@ -184,6 +203,44 @@
               class="ml-auto text-xs text-red-500 hover:underline"
               onclick={() => s.meetings.splice(i, 1)}>remove</button
             >
+            {#if meeting.from !== undefined || meeting.until !== undefined}
+              <div class="flex w-full flex-wrap items-center gap-2 text-xs text-gray-500">
+                meets from
+                <input
+                  type="date"
+                  class="rounded border border-gray-300 px-1.5 py-1"
+                  bind:value={meeting.from}
+                />
+                until
+                <input
+                  type="date"
+                  class="rounded border border-gray-300 px-1.5 py-1"
+                  bind:value={meeting.until}
+                />
+                <button
+                  type="button"
+                  class="rounded p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-700"
+                  title="Meet for the whole term"
+                  aria-label="Meet for the whole term"
+                  onclick={() => {
+                    meeting.from = undefined;
+                    meeting.until = undefined;
+                  }}
+                >
+                  <Icon name="x" class="h-3 w-3" />
+                </button>
+              </div>
+            {:else}
+              <button
+                type="button"
+                class="w-full text-left text-xs font-medium text-blue-600 hover:underline"
+                title="e.g. classes stop before exam week"
+                onclick={() => {
+                  meeting.from = s.course.term.start;
+                  meeting.until = s.course.term.end;
+                }}>+ limit meeting dates</button
+              >
+            {/if}
           </div>
         {/each}
       </div>
@@ -196,7 +253,16 @@
     </section>
 
     <section>
-      <h3 class="mb-2 font-semibold text-gray-700">Holidays &amp; cancellations</h3>
+      <div class="mb-2 flex items-baseline justify-between">
+        <h3 class="font-semibold text-gray-700">Holidays &amp; cancellations</h3>
+        <button
+          type="button"
+          class="text-xs font-medium text-blue-600 hover:underline"
+          onclick={() => (ui.webImport = true)}
+        >
+          Import dates from a website…
+        </button>
+      </div>
       <div class="space-y-2" bind:this={lists.hol}>
         {#each s.holidays as h, i (h)}
           <div

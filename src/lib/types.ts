@@ -21,6 +21,9 @@ export interface Meeting {
   end?: string;
   /** e.g. "Lecture", "Lab" */
   label?: string;
+  /** Optional date range within the term (e.g. classes end before exam week). */
+  from?: string;
+  until?: string;
 }
 
 export interface Holiday {

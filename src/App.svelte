@@ -2,6 +2,7 @@
   import { untrack } from 'svelte';
   import { addDays, fmtDate, parseDate, todayStr } from './lib/dates';
   import Calendar from './lib/components/Calendar.svelte';
+  import ConflictsModal from './lib/components/ConflictsModal.svelte';
   import CoursesModal from './lib/components/CoursesModal.svelte';
   import ExportModal from './lib/components/ExportModal.svelte';
   import ItemModal from './lib/components/ItemModal.svelte';
@@ -10,6 +11,7 @@
   import SettingsModal from './lib/components/SettingsModal.svelte';
   import Toolbar from './lib/components/Toolbar.svelte';
   import Tray from './lib/components/Tray.svelte';
+  import WebImportModal from './lib/components/WebImportModal.svelte';
   import { toIcs } from './lib/ics';
   import { slugify } from './lib/model';
   import { decodeShare } from './lib/share';
@@ -44,7 +46,13 @@
   }
 
   const anyModalOpen = () =>
-    !!ui.editor || ui.settings || ui.courses || ui.exporter || ui.printDialog;
+    !!ui.editor ||
+    ui.settings ||
+    ui.courses ||
+    ui.exporter ||
+    ui.printDialog ||
+    ui.webImport ||
+    ui.conflicts;
 
   // Global keys: undo/redo everywhere; arrows/Enter navigate the calendar.
   function onKeydown(e: KeyboardEvent) {
@@ -163,6 +171,12 @@
 {/if}
 {#if ui.courses}
   <CoursesModal />
+{/if}
+{#if ui.webImport}
+  <WebImportModal />
+{/if}
+{#if ui.conflicts}
+  <ConflictsModal />
 {/if}
 {#if ui.exporter}
   <ExportModal />

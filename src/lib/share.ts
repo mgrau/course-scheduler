@@ -60,6 +60,8 @@ function pack(s: Schedule): unknown[] {
       optMin(m.start),
       optMin(m.end),
       m.label ?? 0,
+      optDate(m.from),
+      optDate(m.until),
     ]),
     s.holidays.map((h) => [off(h.start), off(h.end), h.label]),
     s.categories.map((c) => [c.name, c.color.replace(/^#/, '')]),
@@ -102,11 +104,13 @@ function unpack(v: any[]): Schedule {
     course: { title: String(title), term: { start: String(start), end: date(Number(endOff)) } },
     view: five ? '5day' : '7day',
     weekStart: mon ? 'monday' : 'sunday',
-    meetings: (meetings as any[]).map(([bits, ms, me, ml]) => ({
+    meetings: (meetings as any[]).map(([bits, ms, me, ml, mf, mu]) => ({
       days: DAYS.filter((_, i) => bits & (1 << i)),
       start: optMin(ms),
       end: optMin(me),
       label: str(ml),
+      from: optDate(mf ?? 0),
+      until: optDate(mu ?? 0),
     })),
     holidays: (holidays as any[]).map(([hs, he, hl]) => ({
       start: date(Number(hs)),

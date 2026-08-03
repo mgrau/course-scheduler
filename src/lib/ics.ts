@@ -50,12 +50,17 @@ export function toIcs(s: Schedule): string {
   push('CALSCALE:GREGORIAN');
   push(`X-WR-CALNAME:${esc(s.course.title)}`);
 
-  // Class meetings as weekly recurring events, holidays excluded.
+  // Class meetings as weekly recurring events, holidays excluded. A meeting's
+  // own date range (e.g. classes end before exam week) bounds the recurrence.
   s.meetings.forEach((m, mi) => {
     if (m.days.length === 0) return;
-    let d = parseDate(s.course.term.start);
-    while (d <= end && !m.days.includes(weekdayName(d))) d = addDays(d, 1);
-    if (d > end) return;
+    const rangeStart =
+      m.from && m.from > s.course.term.start ? m.from : s.course.term.start;
+    const rangeEnd = m.until && m.until < s.course.term.end ? m.until : s.course.term.end;
+    const mEnd = parseDate(rangeEnd) < end ? parseDate(rangeEnd) : end;
+    let d = parseDate(rangeStart);
+    while (d <= mEnd && !m.days.includes(weekdayName(d))) d = addDays(d, 1);
+    if (d > mEnd) return;
     const first = fmtDate(d);
     const timed = !!m.start;
 
@@ -68,12 +73,12 @@ export function toIcs(s: Schedule): string {
     } else {
       push(`DTSTART;VALUE=DATE:${dt(first)}`);
     }
-    const until = timed ? `${dt(s.course.term.end)}T235959` : dt(s.course.term.end);
+    const until = timed ? `${dt(rangeEnd)}T235959` : dt(rangeEnd);
     push(
       `RRULE:FREQ=WEEKLY;BYDAY=${m.days.map((x) => BYDAY[x]).join(',')};UNTIL=${until}`,
     );
     const exdates: string[] = [];
-    for (let dd = parseDate(first); dd <= end; dd = addDays(dd, 1)) {
+    for (let dd = parseDate(first); dd <= mEnd; dd = addDays(dd, 1)) {
       const ds = fmtDate(dd);
       if (m.days.includes(weekdayName(dd)) && holidayLabel(s, ds)) {
         exdates.push(timed ? dt(ds, m.start) : dt(ds));

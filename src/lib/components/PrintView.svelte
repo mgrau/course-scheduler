@@ -18,6 +18,7 @@
     categoryColor,
     dueOn,
     holidayLabel,
+    holidayTint,
     inTerm,
     darker,
     lighter,
@@ -125,6 +126,7 @@
                       {@const dateStr = fmtDate(d)}
                       {@const visible = sameMonth(d, month) && inTerm(s, dateStr)}
                       {@const holiday = visible ? holidayLabel(s, dateStr) : null}
+                      {@const tint = holiday ? holidayTint(holiday) : null}
                       {@const wknd = d.getDay() === 0 || d.getDay() === 6}
                       <td
                         class="border border-gray-400 p-1 align-top text-[10px]
@@ -135,6 +137,7 @@
                             : wknd
                               ? 'bg-slate-50'
                               : ''}"
+                        style={tint ? `background-color: ${lighter(tint, 0.95)}` : ''}
                       >
                         {#if visible}
                           <div class="flex justify-between font-semibold">
@@ -237,6 +240,7 @@
                 {@const dateStr = fmtDate(d)}
                 {@const inside = inTerm(s, dateStr)}
                 {@const holiday = inside ? holidayLabel(s, dateStr) : null}
+                {@const tint = holiday ? holidayTint(holiday) : null}
                 {@const wknd = d.getDay() === 0 || d.getDay() === 6}
                 <td
                   class="overflow-hidden border border-gray-400 p-0.5 align-top text-[7px] leading-tight
@@ -247,6 +251,7 @@
                       : wknd
                         ? 'bg-slate-50'
                         : ''}"
+                  style={tint ? `background-color: ${lighter(tint, 0.95)}` : ''}
                 >
                   {#if inside}
                     <span class="font-semibold text-gray-400">{d.getDate()}</span>

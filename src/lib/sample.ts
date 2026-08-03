@@ -77,7 +77,20 @@ export function blankSchedule(): Schedule {
       { name: 'homework', color: '#fbbf24' },
       { name: 'exam', color: '#fb7185' },
     ],
-    activities: [],
-    assignments: [],
+    // Exams start in the tray, ready to drag onto their dates.
+    activities: [
+      { id: newId(), title: 'Midterm 1', category: 'exam' },
+      { id: newId(), title: 'Midterm 2', category: 'exam' },
+      { id: newId(), title: 'Final Exam', category: 'exam' },
+    ],
+    // Five biweekly homework sets spread across the term.
+    assignments: Array.from({ length: 5 }, (_, i) => ({
+      id: newId(),
+      title: `Homework ${i + 1}`,
+      category: 'homework',
+      assigned: fmtDate(addDays(start, i * 14 + 7)),
+      due: fmtDate(addDays(start, i * 14 + 21)),
+      time: '23:59',
+    })),
   };
 }

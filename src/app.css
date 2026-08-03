@@ -82,6 +82,19 @@
   .dark .bg-blue-50 {
     background-color: #172a54;
   }
+  .dark .bg-red-50 {
+    background-color: #3a1620;
+  }
+  .dark .hover\:bg-red-100:hover {
+    background-color: #4c1d29;
+  }
+  .dark .border-red-200,
+  .dark .border-red-300 {
+    border-color: #7f1d2d;
+  }
+  .dark .text-red-700 {
+    color: #fca5a5;
+  }
   .dark .bg-slate-100\/70 {
     background-color: rgb(35 46 66 / 0.7);
   }

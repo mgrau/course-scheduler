@@ -1,5 +1,5 @@
 import type { Activity, Assignment, Meeting, Schedule } from './types';
-import { parseDate, weekdayName } from './dates';
+import { addDays, fmtDate, parseDate, weekdayName } from './dates';
 
 export function newId(): string {
   return crypto.randomUUID();
@@ -24,10 +24,16 @@ export function holidayLabel(s: Schedule, date: string): string | null {
   return null;
 }
 
-/** Meetings whose weekday matches this date (ignores holidays/term). */
+/** Meetings held on this date: weekday matches and the date is within the
+ * meeting's own range (which defaults to the whole term). */
 export function meetingsOn(s: Schedule, date: string): Meeting[] {
   const wd = weekdayName(parseDate(date));
-  return s.meetings.filter((m) => m.days.includes(wd));
+  return s.meetings.filter(
+    (m) =>
+      m.days.includes(wd) &&
+      date >= (m.from ?? s.course.term.start) &&
+      date <= (m.until ?? s.course.term.end),
+  );
 }
 
 /** A day class actually meets: in term, has a meeting, not a holiday. */
@@ -55,10 +61,43 @@ export function unscheduled(s: Schedule): Activity[] {
   return s.activities.filter((a) => !a.date);
 }
 
+/** Why a date is questionable ("falls on Fall Break", "outside the term"), or null. */
+export function dateConflict(s: Schedule, date?: string): string | null {
+  if (!date) return null;
+  if (!inTerm(s, date)) return 'outside the term';
+  const h = holidayLabel(s, date);
+  if (h) return `falls on ${h}`;
+  return null;
+}
+
 /** Stranded on a holiday (class cancelled) or outside the term. */
 export function hasConflict(s: Schedule, a: Activity): boolean {
-  if (!a.date) return false;
-  return !inTerm(s, a.date) || !!holidayLabel(s, a.date);
+  return !!dateConflict(s, a.date);
+}
+
+export interface Conflict {
+  kind: 'activity' | 'assignment';
+  id: string;
+  title: string;
+  date: string;
+  reason: string;
+}
+
+/** Everything scheduled somewhere questionable, for the header warning. */
+export function findConflicts(s: Schedule): Conflict[] {
+  const out: Conflict[] = [];
+  for (const a of s.activities) {
+    const reason = dateConflict(s, a.date);
+    if (reason) out.push({ kind: 'activity', id: a.id, title: a.title, date: a.date!, reason });
+  }
+  for (const a of s.assignments) {
+    const due = dateConflict(s, a.due);
+    if (due) out.push({ kind: 'assignment', id: a.id, title: a.title, date: a.due, reason: `due ${due}` });
+    const asg = dateConflict(s, a.assigned);
+    if (asg)
+      out.push({ kind: 'assignment', id: a.id, title: a.title, date: a.assigned!, reason: `assigned ${asg}` });
+  }
+  return out.sort((x, y) => x.date.localeCompare(y.date));
 }
 
 /** Lighten a hex color (mix toward white) — for tinted backgrounds. */
@@ -84,6 +123,42 @@ export function darker(hex: string, amount = 0.45): string {
     .map((v) => v.toString(16).padStart(2, '0'))
     .join('');
   return `#${c}`;
+}
+
+/** A seasonal accent for well-known holidays, or null for plain gray. */
+export function holidayTint(label: string): string | null {
+  const l = label.toLowerCase();
+  if (/spring/.test(l)) return '#ec4899'; // pink
+  if (/thanksgiving/.test(l)) return '#f97316'; // orange
+  if (/christmas|winter/.test(l)) return '#22c55e'; // green
+  if (/labor/.test(l)) return '#ef4444'; // red
+  if (/halloween/.test(l)) return '#f97316'; // orange
+  if (/fall|autumn/.test(l)) return '#f59e0b'; // amber
+  if (/mlk|martin luther/.test(l)) return '#8b5cf6'; // violet
+  if (/election/.test(l)) return '#3b82f6'; // blue
+  if (/juneteenth|independence|4th of july|july 4|memorial|veteran/.test(l)) return '#ef4444';
+  if (/easter/.test(l)) return '#a855f7'; // lilac
+  return null;
+}
+
+/** Move the entire schedule — term, holidays, and every dated item — by N days. */
+export function shiftSchedule(s: Schedule, days: number) {
+  const mv = (d: string) => fmtDate(addDays(parseDate(d), days));
+  s.course.term.start = mv(s.course.term.start);
+  s.course.term.end = mv(s.course.term.end);
+  for (const h of s.holidays) {
+    h.start = mv(h.start);
+    h.end = mv(h.end);
+  }
+  for (const m of s.meetings) {
+    if (m.from) m.from = mv(m.from);
+    if (m.until) m.until = mv(m.until);
+  }
+  for (const a of s.activities) if (a.date) a.date = mv(a.date);
+  for (const a of s.assignments) {
+    a.due = mv(a.due);
+    if (a.assigned) a.assigned = mv(a.assigned);
+  }
 }
 
 /** Readable text color (white or near-black) for a hex background. */

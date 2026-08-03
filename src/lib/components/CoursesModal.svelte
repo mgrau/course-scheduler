@@ -94,6 +94,8 @@
       onclick={() => {
         store.addCourse();
         ui.courses = false;
+        // A new course starts in Settings: name it, set the term, meetings.
+        ui.settings = true;
       }}
     >
       + New course

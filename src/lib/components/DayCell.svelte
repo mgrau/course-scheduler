@@ -3,10 +3,13 @@
   import {
     activitiesOn,
     assignedOn,
+    darker,
     dueOn,
     holidayLabel,
+    holidayTint,
     inTerm,
     isClassDay,
+    lighter,
     meetingsOn,
   } from '../model';
   import { store } from '../store.svelte';
@@ -36,6 +39,13 @@
   const chipH = $derived(Math.max(18, Math.min(40, Math.floor(118 / Math.max(nChips, 1)))));
 
   let dragOver = $state(false);
+  // Known holidays keep the gray hatching but pick up a faint seasonal shade.
+  const tint = $derived(holiday ? holidayTint(holiday) : null);
+  const tintStyle = $derived(
+    tint
+      ? `background-color: ${ui.dark ? darker(tint, 0.93) : lighter(tint, 0.95)}`
+      : '',
+  );
   const kbFocused = $derived(ui.focusDate === dateStr);
   let cell = $state<HTMLElement | undefined>();
   $effect(() => {
@@ -43,9 +53,9 @@
   });
 
   function acceptable(e: DragEvent): boolean {
-    // Any in-term, non-holiday day accepts items — days without scheduled
-    // classes included.
-    if (!isIn || holiday) return false;
+    // Any in-term day accepts items — holidays included; conflicts are
+    // flagged rather than prevented.
+    if (!isIn) return false;
     return (e.dataTransfer?.types ?? []).includes('application/x-chip');
   }
 
@@ -86,6 +96,7 @@
     {isToday ? 'ring-2 ring-inset ring-sky-400/70' : ''}
     {kbFocused ? 'ring-2 ring-inset ring-blue-600' : ''}
     {dragOver ? 'ring-2 ring-inset ring-blue-400' : ''}"
+  style={tintStyle}
   bind:this={cell}
   {onclick}
   {ondragover}
