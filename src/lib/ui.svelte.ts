@@ -8,6 +8,10 @@ export const ui = $state({
   editor: null as EditorState,
   settings: false,
   courses: false,
+  /** Dark theme active. */
+  dark: false,
+  /** Keyboard-focused day on the calendar (YYYY-MM-DD), or null. */
+  focusDate: null as string | null,
   exporter: false,
   printDialog: false,
   printOpts: {

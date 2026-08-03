@@ -61,6 +61,32 @@
       aria-label="Course title"
     />
     <nav class="flex w-full items-center gap-1.5 overflow-x-auto sm:w-auto">
+      <button
+        class="{btn} disabled:opacity-35"
+        onclick={() => store.undo()}
+        disabled={!store.canUndo}
+        title="Undo (⌘Z)"
+        aria-label="Undo"
+      >
+        <Icon name="undo" />
+      </button>
+      <button
+        class="{btn} disabled:opacity-35"
+        onclick={() => store.redo()}
+        disabled={!store.canRedo}
+        title="Redo (⇧⌘Z)"
+        aria-label="Redo"
+      >
+        <Icon name="redo" />
+      </button>
+      <button
+        class={btn}
+        onclick={() => (ui.dark = !ui.dark)}
+        title={ui.dark ? 'Switch to light mode' : 'Switch to dark mode'}
+        aria-label="Toggle dark mode"
+      >
+        <Icon name={ui.dark ? 'sun' : 'moon'} />
+      </button>
       <button class={btn} onclick={copyLink}>
         <Icon name={copied ? 'check' : 'link'} />{copied ? 'Copied!' : 'Copy link'}
       </button>

@@ -54,6 +54,13 @@ function loadInitial(): Library {
 class ScheduleStore {
   library = $state<Library>(loadInitial());
 
+  // Undo/redo: a stack of JSON snapshots of the whole library. Rapid edits
+  // (typing, dragging) coalesce into one entry via a short debounce.
+  #past = $state<string[]>([]);
+  #future = $state<string[]>([]);
+  #current = JSON.stringify($state.snapshot(this.library));
+  #recordTimer: ReturnType<typeof setTimeout> | undefined;
+
   /** The active course's schedule. */
   get schedule(): Schedule {
     return this.library.courses[this.library.activeId];
@@ -61,6 +68,51 @@ class ScheduleStore {
 
   persist() {
     localStorage.setItem(LIBRARY_KEY, JSON.stringify(this.library));
+  }
+
+  get canUndo(): boolean {
+    return this.#past.length > 0;
+  }
+
+  get canRedo(): boolean {
+    return this.#future.length > 0;
+  }
+
+  /** Called (untracked) whenever the library changes. */
+  noteChange(snapshot: string) {
+    clearTimeout(this.#recordTimer);
+    if (snapshot === this.#current) return;
+    this.#recordTimer = setTimeout(() => this.#record(snapshot), 350);
+  }
+
+  #record(snapshot: string) {
+    if (snapshot === this.#current) return;
+    this.#past.push(this.#current);
+    if (this.#past.length > 100) this.#past.shift();
+    this.#current = snapshot;
+    this.#future = [];
+  }
+
+  /** Any change still sitting in the debounce window becomes undoable now. */
+  #flush() {
+    clearTimeout(this.#recordTimer);
+    this.#record(JSON.stringify($state.snapshot(this.library)));
+  }
+
+  undo() {
+    this.#flush();
+    if (!this.#past.length) return;
+    this.#future.push(this.#current);
+    this.#current = this.#past.pop()!;
+    this.library = JSON.parse(this.#current);
+  }
+
+  redo() {
+    this.#flush();
+    if (!this.#future.length) return;
+    this.#past.push(this.#current);
+    this.#current = this.#future.pop()!;
+    this.library = JSON.parse(this.#current);
   }
 
   courseIds(): string[] {

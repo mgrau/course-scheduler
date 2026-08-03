@@ -36,6 +36,11 @@
   const chipH = $derived(Math.max(18, Math.min(40, Math.floor(118 / Math.max(nChips, 1)))));
 
   let dragOver = $state(false);
+  const kbFocused = $derived(ui.focusDate === dateStr);
+  let cell = $state<HTMLElement | undefined>();
+  $effect(() => {
+    if (kbFocused) cell?.scrollIntoView({ block: 'nearest' });
+  });
 
   function acceptable(e: DragEvent): boolean {
     // Any in-term, non-holiday day accepts items — days without scheduled
@@ -79,7 +84,9 @@
           ? 'cursor-pointer bg-slate-100/70 hover:bg-sky-50/60'
           : 'cursor-pointer bg-gray-50 hover:bg-sky-50/60'}
     {isToday ? 'ring-2 ring-inset ring-sky-400/70' : ''}
+    {kbFocused ? 'ring-2 ring-inset ring-blue-600' : ''}
     {dragOver ? 'ring-2 ring-inset ring-blue-400' : ''}"
+  bind:this={cell}
   {onclick}
   {ondragover}
   {ondrop}

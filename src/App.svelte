@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { untrack } from 'svelte';
+  import { addDays, fmtDate, parseDate, todayStr } from './lib/dates';
   import Calendar from './lib/components/Calendar.svelte';
   import CoursesModal from './lib/components/CoursesModal.svelte';
   import ExportModal from './lib/components/ExportModal.svelte';
@@ -16,12 +18,84 @@
   import { ui } from './lib/ui.svelte';
   import { toYaml } from './lib/yaml-io';
 
-  // Autosave: JSON.stringify reads the whole library deeply, so this effect
-  // re-runs on any change anywhere in the state tree.
+  // Autosave + undo history: JSON.stringify reads the whole library deeply,
+  // so this effect re-runs on any change anywhere in the state tree.
   $effect(() => {
-    JSON.stringify(store.library);
-    store.persist();
+    const snapshot = JSON.stringify(store.library);
+    localStorage.setItem('course-scheduler:library', snapshot);
+    untrack(() => store.noteChange(snapshot));
   });
+
+  // Theme: saved preference, else the system setting; class on <html>.
+  const THEME_KEY = 'course-scheduler:theme';
+  const savedTheme = localStorage.getItem(THEME_KEY);
+  ui.dark = savedTheme ? savedTheme === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;
+  $effect(() => {
+    document.documentElement.classList.toggle('dark', ui.dark);
+    localStorage.setItem(THEME_KEY, ui.dark ? 'dark' : 'light');
+  });
+
+  // First-visit hint.
+  const HINT_KEY = 'course-scheduler:hint-seen';
+  let showHint = $state(!localStorage.getItem(HINT_KEY));
+  function dismissHint() {
+    showHint = false;
+    localStorage.setItem(HINT_KEY, '1');
+  }
+
+  const anyModalOpen = () =>
+    !!ui.editor || ui.settings || ui.courses || ui.exporter || ui.printDialog;
+
+  // Global keys: undo/redo everywhere; arrows/Enter navigate the calendar.
+  function onKeydown(e: KeyboardEvent) {
+    const target = e.target as HTMLElement;
+    const inField = !!target.closest('input, textarea, select, [contenteditable]');
+
+    if ((e.metaKey || e.ctrlKey) && !e.altKey && e.key.toLowerCase() === 'z') {
+      if (inField) return; // let text fields keep their native undo
+      e.preventDefault();
+      if (e.shiftKey) store.redo();
+      else store.undo();
+      return;
+    }
+    if ((e.metaKey || e.ctrlKey) && !e.altKey && !e.shiftKey && e.key.toLowerCase() === 'y') {
+      if (inField) return;
+      e.preventDefault();
+      store.redo();
+      return;
+    }
+
+    if (inField || anyModalOpen() || e.metaKey || e.ctrlKey || e.altKey) return;
+    const term = store.schedule.course.term;
+    const deltas: Record<string, number> = {
+      ArrowLeft: -1,
+      ArrowRight: 1,
+      ArrowUp: -7,
+      ArrowDown: 7,
+    };
+    if (e.key in deltas) {
+      e.preventDefault();
+      const clamp = (d: string) => (d < term.start ? term.start : d > term.end ? term.end : d);
+      if (!ui.focusDate) {
+        ui.focusDate = clamp(todayStr());
+        return;
+      }
+      let next = fmtDate(addDays(parseDate(ui.focusDate), deltas[e.key]));
+      // In the 5-day view, single steps skip the hidden weekend.
+      if (store.schedule.view === '5day' && Math.abs(deltas[e.key]) === 1) {
+        const step = deltas[e.key];
+        let d = parseDate(next);
+        while (d.getDay() === 0 || d.getDay() === 6) d = addDays(d, step);
+        next = fmtDate(d);
+      }
+      ui.focusDate = clamp(next);
+    } else if (e.key === 'Enter' && ui.focusDate) {
+      e.preventDefault();
+      ui.editor = { mode: 'new', date: ui.focusDate };
+    } else if (e.key === 'Escape') {
+      ui.focusDate = null;
+    }
+  }
 
   // Import a schedule from a link: open the existing copy if we already have
   // an identical one, otherwise add it as a new course.
@@ -69,7 +143,7 @@
   resolveHash();
 </script>
 
-<svelte:window onhashchange={resolveHash} />
+<svelte:window onhashchange={resolveHash} onkeydown={onKeydown} />
 
 <div class="screen-only flex h-screen flex-col bg-white text-gray-900">
   <Toolbar />
@@ -95,6 +169,24 @@
 {/if}
 {#if ui.printDialog}
   <PrintDialog />
+{/if}
+
+{#if showHint}
+  <div
+    class="screen-only fixed bottom-4 left-1/2 z-30 w-[26rem] max-w-[calc(100vw-2rem)] -translate-x-1/2 rounded-xl border border-gray-200 bg-white p-4 shadow-xl"
+  >
+    <h3 class="mb-1.5 font-semibold text-gray-800">👋 Welcome to Course Scheduler</h3>
+    <ul class="mb-3 list-disc space-y-1 pl-4 text-sm text-gray-600">
+      <li>Click any day to add an activity or assignment, or drag items around the calendar.</li>
+      <li>The <b>Unscheduled</b> tray holds items without a date — drag them on when ready.</li>
+      <li><b>Settings</b> sets your meeting days, holidays, and categories (try a semester preset).</li>
+      <li>Everything autosaves in this browser; <b>Copy link</b> shares the whole schedule.</li>
+    </ul>
+    <button
+      class="rounded-lg bg-blue-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-blue-500"
+      onclick={dismissHint}>Got it</button
+    >
+  </div>
 {/if}
 
 <PrintView />

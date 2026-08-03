@@ -22,6 +22,17 @@
   const conflict = $derived(
     kind === 'activity' && hasConflict(store.schedule, item as Activity),
   );
+  // Pastel tints on light surfaces; dimmed color fills with light text on dark.
+  const strongStyle = $derived(
+    ui.dark
+      ? `background-color: ${darker(color, 0.62)}; color: ${lighter(color, 0.62)}`
+      : `background-color: ${lighter(color, 0.6)}; color: ${darker(color, 0.5)}`,
+  );
+  const faintStyle = $derived(
+    ui.dark
+      ? `background-color: ${darker(color, 0.76)}; color: ${lighter(color, 0.45)}`
+      : `background-color: ${lighter(color, 0.78)}; color: ${darker(color, 0.45)}`,
+  );
   const dueTime = $derived(kind === 'due' ? ((item as Assignment).time ?? '') : '');
   const showDesc = $derived(size >= 36 && !!item.description);
   // A reusable, unscheduled activity is a template: dragging it copies.
@@ -48,7 +59,7 @@
     class="flex w-full cursor-grab flex-col justify-center overflow-hidden rounded px-1.5 text-left text-xs font-medium shadow-md shadow-slate-500/30 transition hover:brightness-105 {conflict
       ? 'ring-2 ring-red-500'
       : ''}"
-    style="height: {size}px; background-color: {lighter(color, 0.6)}; color: {darker(color, 0.5)}"
+    style="height: {size}px; {strongStyle}"
     draggable="true"
     data-chip="activity:{item.id}"
     {ondragstart}
@@ -72,7 +83,7 @@
 {:else if kind === 'assigned'}
   <button
     class="flex w-full cursor-grab items-center gap-1 overflow-hidden rounded px-1.5 text-left text-xs shadow-md shadow-slate-500/30 transition hover:brightness-105"
-    style="height: {size}px; background-color: {lighter(color, 0.78)}; color: {darker(color, 0.45)}"
+    style="height: {size}px; {faintStyle}"
     draggable="true"
     data-chip="assigned:{item.id}"
     {ondragstart}
@@ -85,7 +96,7 @@
 {:else}
   <button
     class="flex w-full cursor-grab items-center gap-1 overflow-hidden rounded px-1.5 text-left text-xs font-semibold shadow-md shadow-slate-500/30 transition hover:brightness-105"
-    style="height: {size}px; background-color: {lighter(color, 0.6)}; color: {darker(color, 0.5)}"
+    style="height: {size}px; {strongStyle}"
     draggable="true"
     data-chip="due:{item.id}"
     {ondragstart}

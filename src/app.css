@@ -1,5 +1,109 @@
 @import 'tailwindcss';
 
+@custom-variant dark (&:where(.dark, .dark *));
+
+/*
+ * Dark theme by utility remap: the app uses a small, consistent vocabulary of
+ * light-surface utilities, so under html.dark those classes resolve to dark
+ * equivalents. Screen-only — print always renders the light look.
+ */
+@media screen {
+  .dark {
+    color-scheme: dark;
+  }
+  .dark .bg-white {
+    background-color: #0f172a;
+  }
+  .dark .bg-gray-50,
+  .dark .bg-slate-50 {
+    background-color: #1a2333;
+  }
+  .dark .bg-gray-100,
+  .dark .bg-slate-100 {
+    background-color: #232e42;
+  }
+  .dark .bg-gray-200 {
+    background-color: #2d3a52;
+  }
+  .dark .bg-sky-50\/60 {
+    background-color: rgb(12 45 63 / 0.6);
+  }
+  .dark .text-gray-900,
+  .dark .text-gray-800,
+  .dark .text-slate-800 {
+    color: #e2e8f0;
+  }
+  .dark .text-gray-700,
+  .dark .text-slate-700,
+  .dark .text-slate-600 {
+    color: #cbd5e1;
+  }
+  .dark .text-gray-600,
+  .dark .text-gray-500,
+  .dark .text-slate-500 {
+    color: #94a3b8;
+  }
+  .dark .border-gray-200 {
+    border-color: #283349;
+  }
+  .dark .border-gray-300 {
+    border-color: #3c4a63;
+  }
+  .dark input:where(:not([type='color'], [type='checkbox'], [type='radio'])),
+  .dark select,
+  .dark textarea {
+    background-color: #0b1425;
+    border-color: #3c4a63;
+    color: #e2e8f0;
+  }
+  .dark ::placeholder {
+    color: #64748b;
+  }
+  .dark .hover\:bg-gray-50:hover {
+    background-color: #1e293b;
+  }
+  .dark .hover\:bg-gray-100:hover,
+  .dark .hover\:bg-gray-200:hover {
+    background-color: #2d3a52;
+  }
+  .dark .hover\:bg-sky-50\/60:hover {
+    background-color: rgb(12 45 63 / 0.6);
+  }
+  .dark .hover\:bg-sky-50:hover {
+    background-color: #0c2d3f;
+  }
+  .dark .bg-sky-50\/60,
+  .dark .bg-sky-50 {
+    background-color: #0c2d3f;
+  }
+  .dark .bg-sky-100 {
+    background-color: #0e3a52;
+  }
+  .dark .bg-blue-50 {
+    background-color: #172a54;
+  }
+  .dark .bg-slate-100\/70 {
+    background-color: rgb(35 46 66 / 0.7);
+  }
+  .dark .bg-gray-100\/60,
+  .dark .bg-slate-800\/60 {
+    background-color: rgb(26 35 51 / 0.7);
+  }
+  .dark .bg-white\/80 {
+    background-color: rgb(35 46 66 / 0.85);
+  }
+  .dark .shadow-slate-500\/30 {
+    --tw-shadow-color: rgb(0 0 0 / 0.5);
+  }
+  .dark .stripes {
+    background-image: repeating-linear-gradient(
+      -45deg,
+      rgba(148, 163, 184, 0.14) 0 5px,
+      transparent 5px 12px
+    );
+  }
+}
+
 .print-only {
   display: none;
 }
