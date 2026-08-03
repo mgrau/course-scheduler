@@ -1,6 +1,15 @@
 import type { Activity, Assignment, Schedule } from './types';
 import { addDays, fmtDate, parseDate, shortDate, weekdayName, weeksOf } from './dates';
-import { activitiesOn, assignedOn, dueOn, holidayLabel, meetingsOn } from './model';
+import {
+  activitiesOn,
+  assignedOn,
+  categoryColor,
+  darker,
+  dueOn,
+  holidayLabel,
+  lighter,
+  meetingsOn,
+} from './model';
 
 export type TableStyle = 'meeting' | 'week';
 
@@ -139,5 +148,74 @@ export function toLatex(s: Schedule, style: TableStyle): string {
   }
   lines.push('\\bottomrule');
   lines.push('\\end{longtable}');
+  return lines.join('\n') + '\n';
+}
+
+// ---------- HTML (for pasting into Canvas / LMS pages) ----------
+//
+// Canvas's rich-content editor strips <style> blocks and class attributes,
+// so everything is expressed as inline styles on plain table markup.
+
+function htmlEscape(t: string): string {
+  return t
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+const TD = 'border:1px solid #d1d5db;padding:4px 8px;vertical-align:top;text-align:left';
+const TH = `${TD};background:#f3f4f6;font-weight:bold`;
+
+function chip(s: Schedule, title: string, category: string | undefined, bold = false): string {
+  const c = categoryColor(s, category);
+  return (
+    `<span style="background:${lighter(c, 0.6)};color:${darker(c, 0.5)};` +
+    `padding:1px 6px;border-radius:4px;white-space:nowrap${bold ? ';font-weight:bold' : ''}">` +
+    `${htmlEscape(title)}</span>`
+  );
+}
+
+export function toHtml(s: Schedule, style: TableStyle): string {
+  const lines: string[] = [`<table style="border-collapse:collapse">`];
+  if (style === 'meeting') {
+    lines.push(
+      `<thead><tr><th style="${TH}">Date</th><th style="${TH}">Day</th>` +
+        `<th style="${TH}">Activities</th><th style="${TH}">Assigned</th>` +
+        `<th style="${TH}">Due</th></tr></thead>`,
+    );
+    lines.push('<tbody>');
+    for (const r of dayRows(s)) {
+      const acts = r.holiday
+        ? `<em style="color:#6b7280">No class &mdash; ${htmlEscape(r.holiday)}</em>`
+        : r.activities.map((a) => chip(s, a.title, a.category)).join('<br>');
+      const asg = r.assigned.map((a) => chip(s, `${a.title} →`, a.category)).join('<br>');
+      const due = r.due
+        .map((a) => chip(s, `→ ${dueLabel(a)}`, a.category, true))
+        .join('<br>');
+      lines.push(
+        `<tr><td style="${TD};white-space:nowrap">${shortDate(r.d)}</td>` +
+          `<td style="${TD}">${weekdayName(r.d)}</td>` +
+          `<td style="${TD}">${acts}</td><td style="${TD}">${asg}</td>` +
+          `<td style="${TD}">${due}</td></tr>`,
+      );
+    }
+  } else {
+    lines.push(
+      `<thead><tr><th style="${TH}">Week</th><th style="${TH}">Dates</th>` +
+        `<th style="${TH}">Activities</th><th style="${TH}">Due</th></tr></thead>`,
+    );
+    lines.push('<tbody>');
+    for (const w of weekRows(s)) {
+      lines.push(
+        `<tr><td style="${TD};text-align:center">${w.n}</td>` +
+          `<td style="${TD};white-space:nowrap">${shortDate(w.start)} &ndash; ${shortDate(w.end)}</td>` +
+          `<td style="${TD}">${w.activities.map(htmlEscape).join('<br>')}</td>` +
+          `<td style="${TD}">${w.due.map(htmlEscape).join('<br>')}</td></tr>`,
+      );
+    }
+  }
+  lines.push('</tbody>');
+  lines.push('</table>');
   return lines.join('\n') + '\n';
 }

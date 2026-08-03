@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { toMarkdown, toLatex, type TableStyle } from '../exports';
+  import { toHtml, toMarkdown, toLatex, type TableStyle } from '../exports';
   import { toIcs } from '../ics';
   import { slugify } from '../model';
   import { encodeShare } from '../share';
@@ -8,27 +8,47 @@
   import { ui } from '../ui.svelte';
   import Modal from './Modal.svelte';
 
-  type Tab = 'yaml' | 'markdown' | 'latex' | 'ics';
+  type Tab = 'yaml' | 'markdown' | 'html' | 'latex' | 'ics';
   let tab = $state<Tab>('yaml');
   let style = $state<TableStyle>('meeting');
   let copied = $state(false);
   let linkCopied = $state(false);
+  let richCopied = $state(false);
 
   const content = $derived(
     tab === 'yaml'
       ? toYaml(store.schedule)
       : tab === 'markdown'
         ? toMarkdown(store.schedule, style)
-        : tab === 'latex'
-          ? toLatex(store.schedule, style)
-          : toIcs(store.schedule),
+        : tab === 'html'
+          ? toHtml(store.schedule, style)
+          : tab === 'latex'
+            ? toLatex(store.schedule, style)
+            : toIcs(store.schedule),
   );
 
-  const filename = $derived.by(() => {
-    const base = slugify(store.schedule.course.title) || 'schedule';
-    const ext = tab === 'yaml' ? 'yaml' : tab === 'markdown' ? 'md' : tab === 'latex' ? 'tex' : 'ics';
-    return `${base}.${ext}`;
-  });
+  const EXT: Record<Tab, string> = {
+    yaml: 'yaml',
+    markdown: 'md',
+    html: 'html',
+    latex: 'tex',
+    ics: 'ics',
+  };
+  const filename = $derived(
+    `${slugify(store.schedule.course.title) || 'schedule'}.${EXT[tab]}`,
+  );
+
+  /** Rich copy: pasting into Canvas's editor drops the table in already rendered. */
+  async function copyFormatted() {
+    await navigator.clipboard.write([
+      new ClipboardItem({
+        'text/html': new Blob([content], { type: 'text/html' }),
+        'text/plain': new Blob([content], { type: 'text/plain' }),
+      }),
+    ]);
+    richCopied = true;
+    setTimeout(() => (richCopied = false), 1500);
+  }
 
   async function copyIcsLink() {
     const data = await encodeShare(store.schedule);
@@ -56,14 +76,14 @@
 
 <Modal title="Export" onclose={() => (ui.exporter = false)} wide>
   <div class="mb-3 flex items-center gap-2">
-    {#each [['yaml', 'YAML'], ['markdown', 'Markdown'], ['latex', 'LaTeX'], ['ics', 'Calendar (.ics)']] as [id, label] (id)}
+    {#each [['yaml', 'YAML'], ['markdown', 'Markdown'], ['html', 'HTML'], ['latex', 'LaTeX'], ['ics', 'Calendar (.ics)']] as [id, label] (id)}
       <button
         class="rounded px-3 py-1 text-sm font-medium
           {tab === id ? 'bg-blue-600 text-white' : 'text-gray-600 hover:bg-gray-100'}"
         onclick={() => (tab = id as Tab)}>{label}</button
       >
     {/each}
-    {#if tab === 'markdown' || tab === 'latex'}
+    {#if tab === 'markdown' || tab === 'html' || tab === 'latex'}
       <select
         class="ml-auto rounded border border-gray-300 px-2 py-1 text-sm"
         bind:value={style}
@@ -73,6 +93,13 @@
       </select>
     {/if}
   </div>
+
+  {#if tab === 'html'}
+    <p class="mb-2 text-xs text-gray-500">
+      Plain table markup with inline styles, ready for Canvas: use "Copy formatted" and paste
+      straight into the rich-content editor, or "Copy" the source into its HTML view.
+    </p>
+  {/if}
 
   {#if tab === 'ics'}
     <p class="mb-2 text-xs text-gray-500">
@@ -94,6 +121,12 @@
       <button
         class="mr-auto rounded border border-gray-300 px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50"
         onclick={copyIcsLink}>{linkCopied ? 'Link copied!' : 'Copy .ics link'}</button
+      >
+    {/if}
+    {#if tab === 'html'}
+      <button
+        class="mr-auto rounded border border-gray-300 px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50"
+        onclick={copyFormatted}>{richCopied ? 'Copied!' : 'Copy formatted'}</button
       >
     {/if}
     <button

@@ -4,6 +4,7 @@
     fmtDate,
     lastOfMonth,
     monthLabel,
+    monthShort,
     monthsOf,
     parseDate,
     sameMonth,
@@ -58,6 +59,10 @@
   // Cut-out cards match the size of a printed calendar day cell.
   const rowHmm = $derived((TABLE_MM - HEADER_MM) / maxWeeks);
   const cardWmm = $derived((PAGE_W_MM - WK_COL_MM) / dayIdxs.length);
+
+  // Whole-term overview: every week of the semester as one row on one page.
+  const termWeeks = $derived(weeksOf(termStart, termEnd, s.weekStart));
+  const overviewRowMm = $derived((TABLE_MM - HEADER_MM) / Math.max(termWeeks.length, 1));
 
   // Pack months onto pages: short months (orphaned first/last weeks of the
   // term) share a page when their weeks plus a one-row header allowance per
@@ -194,6 +199,88 @@
         {/each}
       </section>
     {/each}
+  {/if}
+
+  {#if ui.printOpts.overview}
+    <section class="page">
+      <div class="mb-2 flex items-baseline justify-between border-b-2 border-slate-700 pb-1">
+        <h1 class="text-2xl font-bold text-slate-800">Semester overview</h1>
+        <span class="text-xs font-semibold uppercase tracking-widest text-gray-500">
+          {s.course.title}
+        </span>
+      </div>
+      <table class="w-full table-fixed border-collapse" style="height: {TABLE_MM}mm">
+        <thead>
+          <tr>
+            <th class="w-14 border border-slate-700 bg-slate-700 px-1 py-0.5 text-left text-[9px] uppercase text-white">
+              Wk
+            </th>
+            {#each dayIdxs as i (i)}
+              <th class="border border-slate-700 bg-slate-700 px-1 py-0.5 text-left text-[9px] uppercase tracking-wide text-white">
+                {order[i]}
+              </th>
+            {/each}
+          </tr>
+        </thead>
+        <tbody>
+          {#each termWeeks as week, wi (fmtDate(week[0]))}
+            <tr style="height: {overviewRowMm.toFixed(1)}mm">
+              <td class="border border-gray-400 bg-slate-50 p-1 align-top">
+                <div class="text-[10px] font-bold text-slate-500">{wi + 1}</div>
+                <div class="text-[7px] leading-tight text-gray-400">
+                  {monthShort(week[0])}
+                  {week[0].getDate()}
+                </div>
+              </td>
+              {#each dayIdxs as i (i)}
+                {@const d = week[i]}
+                {@const dateStr = fmtDate(d)}
+                {@const inside = inTerm(s, dateStr)}
+                {@const holiday = inside ? holidayLabel(s, dateStr) : null}
+                {@const wknd = d.getDay() === 0 || d.getDay() === 6}
+                <td
+                  class="overflow-hidden border border-gray-400 p-0.5 align-top text-[7px] leading-tight
+                    {!inside
+                    ? 'bg-gray-100'
+                    : holiday
+                      ? 'stripes bg-gray-100'
+                      : wknd
+                        ? 'bg-slate-50'
+                        : ''}"
+                >
+                  {#if inside}
+                    <span class="font-semibold text-gray-400">{d.getDate()}</span>
+                    {#if holiday}
+                      <span class="italic text-gray-500">{holiday}</span>
+                    {/if}
+                    <div class="space-y-px">
+                      {#each activitiesOn(s, dateStr) as a (a.id)}
+                        {@const c = categoryColor(s, a.category)}
+                        <div
+                          class="truncate rounded-sm px-0.5"
+                          style="background-color: {lighter(c, 0.6)}; color: {darker(c, 0.5)}"
+                        >
+                          {a.title}
+                        </div>
+                      {/each}
+                      {#each dueOn(s, dateStr) as a (a.id)}
+                        {@const c = categoryColor(s, a.category)}
+                        <div
+                          class="truncate rounded-sm px-0.5 font-semibold"
+                          style="background-color: {lighter(c, 0.6)}; color: {darker(c, 0.5)}"
+                        >
+                          → {a.title}
+                        </div>
+                      {/each}
+                    </div>
+                  {/if}
+                </td>
+              {/each}
+            </tr>
+          {/each}
+        </tbody>
+      </table>
+    </section>
   {/if}
 
   {#if ui.printOpts.cards && cards.length > 0}

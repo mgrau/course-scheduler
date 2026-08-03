@@ -14,6 +14,10 @@
       <span>Calendar — one month per page</span>
     </label>
     <label class="flex items-center gap-2">
+      <input type="checkbox" bind:checked={ui.printOpts.overview} />
+      <span>Semester overview — whole term on one page, one week per row</span>
+    </label>
+    <label class="flex items-center gap-2">
       <input type="checkbox" bind:checked={ui.printOpts.cards} />
       <span>
         Unscheduled activities as cut-out cards
@@ -32,7 +36,8 @@
       <button
         class="rounded bg-blue-600 px-4 py-1.5 text-sm font-medium text-white hover:bg-blue-500"
         onclick={requestPrint}
-        disabled={!ui.printOpts.calendar && !ui.printOpts.cards}>Print…</button
+        disabled={!ui.printOpts.calendar && !ui.printOpts.overview && !ui.printOpts.cards}
+        >Print…</button
       >
     </div>
   </div>

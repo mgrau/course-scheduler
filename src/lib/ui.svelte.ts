@@ -12,6 +12,7 @@ export const ui = $state({
   printDialog: false,
   printOpts: {
     calendar: true,
+    overview: false,
     cards: false,
   },
 });
