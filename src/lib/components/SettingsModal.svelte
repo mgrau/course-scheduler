@@ -10,6 +10,7 @@
   import TimeInput from './TimeInput.svelte';
 
   const s = $derived(store.schedule);
+  const flipMs = matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : 160;
 
   function toggleDay(meeting: { days: string[] }, day: string) {
     if (meeting.days.includes(day)) meeting.days = meeting.days.filter((d) => d !== day);
@@ -167,7 +168,7 @@
           </select>
         </label>
       </div>
-      <p class="mt-1 text-[11px] text-gray-400">
+      <p class="mt-1 text-[11px] text-gray-500">
         Moving the term start shifts everything — activities, assignments, and holidays — with
         it (undo reverses). Moving the end only lengthens or shortens the term.
       </p>
@@ -185,7 +186,7 @@
                   class="rounded px-1.5 py-0.5 text-xs font-medium
                     {meeting.days.includes(day)
                     ? 'bg-blue-600 text-white'
-                    : 'bg-gray-100 text-gray-400 hover:bg-gray-200'}"
+                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}"
                   onclick={() => toggleDay(meeting, day)}>{day}</button
                 >
               {/each}
@@ -196,11 +197,12 @@
             <input
               class="w-24 rounded border border-gray-300 px-2 py-1"
               placeholder="Label"
+              aria-label="Meeting label"
               bind:value={meeting.label}
             />
             <button
               type="button"
-              class="ml-auto text-xs text-red-500 hover:underline"
+              class="ml-auto text-xs text-red-600 hover:underline"
               onclick={() => s.meetings.splice(i, 1)}>remove</button
             >
             {#if meeting.from !== undefined || meeting.until !== undefined}
@@ -209,12 +211,14 @@
                 <input
                   type="date"
                   class="rounded border border-gray-300 px-1.5 py-1"
+                  aria-label="Meeting first day"
                   bind:value={meeting.from}
                 />
                 until
                 <input
                   type="date"
                   class="rounded border border-gray-300 px-1.5 py-1"
+                  aria-label="Meeting last day"
                   bind:value={meeting.until}
                 />
                 <button
@@ -269,17 +273,19 @@
             class="flex flex-wrap items-center gap-2 rounded px-1 py-0.5 {lifted('hol', i)
               ? 'relative z-10 bg-sky-50 shadow-md ring-1 ring-sky-300'
               : ''}"
-            animate:flip={{ duration: 160 }}
+            animate:flip={{ duration: flipMs }}
           >
             {@render grip('hol', s.holidays, i)}
             <input
               class="w-40 rounded border border-gray-300 px-2 py-1"
               placeholder="Label"
+              aria-label="Holiday name"
               bind:value={h.label}
             />
             <input
               type="date"
               class="rounded border border-gray-300 px-1.5 py-1"
+              aria-label="Holiday date"
               value={h.start}
               oninput={(e) => setStart(h, e.currentTarget.value)}
             />
@@ -289,6 +295,7 @@
                 type="date"
                 class="rounded border border-gray-300 px-1.5 py-1"
                 min={h.start}
+                aria-label="Holiday end date"
                 bind:value={h.end}
               />
               <button
@@ -309,7 +316,7 @@
             {/if}
             <button
               type="button"
-              class="ml-auto text-xs text-red-500 hover:underline"
+              class="ml-auto text-xs text-red-600 hover:underline"
               onclick={() => s.holidays.splice(i, 1)}>remove</button
             >
           </div>
@@ -333,18 +340,23 @@
             class="flex items-center gap-2 rounded px-1 py-0.5 {lifted('cat', i)
               ? 'relative z-10 bg-sky-50 shadow-md ring-1 ring-sky-300'
               : ''}"
-            animate:flip={{ duration: 160 }}
+            animate:flip={{ duration: flipMs }}
           >
             {@render grip('cat', s.categories, i)}
             <input
               type="color"
               class="w-10 cursor-pointer self-stretch rounded-md"
+              aria-label="Category color"
               bind:value={c.color}
             />
-            <input class="w-40 rounded border border-gray-300 px-2 py-1" bind:value={c.name} />
+            <input
+              class="w-40 rounded border border-gray-300 px-2 py-1"
+              aria-label="Category name"
+              bind:value={c.name}
+            />
             <button
               type="button"
-              class="ml-auto text-xs text-red-500 hover:underline"
+              class="ml-auto text-xs text-red-600 hover:underline"
               onclick={() => s.categories.splice(i, 1)}>remove</button
             >
           </div>

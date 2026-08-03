@@ -38,6 +38,7 @@
 </script>
 
 <header class="border-b border-gray-200 bg-white shadow-sm">
+  <h1 class="sr-only">Course Scheduler</h1>
   <div class="flex flex-wrap items-center gap-x-2 gap-y-1.5 px-3 py-2">
     <span
       class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-sky-500"
@@ -98,7 +99,7 @@
       >
         <Icon name={ui.dark ? 'sun' : 'moon'} />
       </button>
-      <button class={btn} onclick={copyLink}>
+      <button class={btn} onclick={copyLink} aria-live="polite">
         <Icon name={copied ? 'check' : 'link'} />{copied ? 'Copied!' : 'Copy link'}
       </button>
       <button class={btn} onclick={() => (ui.courses = true)}>

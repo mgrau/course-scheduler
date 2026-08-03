@@ -114,7 +114,7 @@
       </span>
       {#if meetings.length > 0}
         <span
-          class="truncate rounded-full bg-slate-100 px-1.5 py-px text-[10px] font-medium text-slate-500"
+          class="truncate rounded-full bg-slate-100 px-1.5 py-px text-[10px] font-medium text-slate-600"
         >
           {meetings.map((m) => m.label ?? m.start ?? 'class').join(' · ')}
         </span>

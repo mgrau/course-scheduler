@@ -21,7 +21,7 @@
       <input type="checkbox" bind:checked={ui.printOpts.cards} />
       <span>
         Unscheduled activities as cut-out cards
-        <span class="text-gray-400">({nUnscheduled} card{nUnscheduled === 1 ? '' : 's'})</span>
+        <span class="text-gray-500">({nUnscheduled} card{nUnscheduled === 1 ? '' : 's'})</span>
       </span>
     </label>
     <p class="text-xs text-gray-500">

@@ -82,6 +82,7 @@
       <input
         class="min-w-0 flex-1 rounded border border-gray-300 px-2 py-1.5"
         placeholder="https://your-university.edu/academic-calendar…"
+        aria-label="Web page address"
         bind:value={url}
         onkeydown={(e) => e.key === 'Enter' && fetchUrl()}
       />
@@ -129,6 +130,7 @@
                 <td class="px-2 py-1">
                   <select
                     class="w-full rounded border border-gray-300 px-1 py-0.5"
+                    aria-label="Import {f.label} as"
                     bind:value={f.role}
                   >
                     <option value="ignore">—</option>

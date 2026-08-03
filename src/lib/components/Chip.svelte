@@ -86,7 +86,7 @@
       {/if}
     </span>
     {#if showDesc}
-      <span class="w-full truncate text-[10px] font-normal opacity-75">{item.description}</span>
+      <span class="w-full truncate text-[10px] font-normal">{item.description}</span>
     {/if}
   </button>
 {:else if kind === 'assigned'}

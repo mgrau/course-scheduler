@@ -56,7 +56,7 @@
               {lib.courses[id].course.title}
             </span>
             {#if active}
-              <span class="rounded-full bg-sky-500 px-2 py-px text-[10px] font-bold text-white">
+              <span class="rounded-full bg-sky-700 px-2 py-px text-[10px] font-bold text-white">
                 open
               </span>
             {/if}
@@ -77,7 +77,7 @@
           <Icon name="copy" class="h-3.5 w-3.5" />duplicate
         </button>
         <button
-          class="flex items-center gap-1 text-xs font-medium text-red-500 hover:underline"
+          class="flex items-center gap-1 text-xs font-medium text-red-600 hover:underline"
           onclick={() => remove(id)}
         >
           <Icon name="trash" class="h-3.5 w-3.5" />delete
@@ -86,7 +86,7 @@
     {/each}
   </div>
   <div class="mt-4 flex justify-between">
-    <p class="max-w-56 text-[11px] leading-snug text-gray-400">
+    <p class="max-w-56 text-[11px] leading-snug text-gray-500">
       Courses are stored in this browser. Use Export → YAML for backups you can keep in git.
     </p>
     <button

@@ -27,7 +27,7 @@
 <div class="cal-grid" style="--cols: {dayIdxs.length}">
   <!-- header row -->
   <div
-    class="sticky top-0 z-10 border-b border-r border-gray-200 bg-gray-50 px-2 py-1 text-right text-xs font-semibold uppercase tracking-wide text-gray-400"
+    class="sticky top-0 z-10 border-b border-r border-gray-200 bg-gray-50 px-2 py-1 text-right text-xs font-semibold uppercase tracking-wide text-gray-500"
   >
     Wk
   </div>
@@ -46,7 +46,7 @@
           {gutterMonth(week, i)}
         </div>
       {/if}
-      <div class="text-xs font-semibold text-gray-400" title="Course week {i + 1}">{i + 1}</div>
+      <div class="text-xs font-semibold text-gray-500" title="Course week {i + 1}">{i + 1}</div>
     </div>
     {#each dayIdxs as di (di)}
       <DayCell date={week[di]} extras={di === lastIdx ? foldExtras(week) : []} />

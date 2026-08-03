@@ -134,7 +134,7 @@
     {#if type === 'activity'}
       <label class="block text-sm">
         <span class="font-medium text-gray-700">Date</span>
-        <span class="ml-1 text-xs text-gray-400">(leave empty to keep unscheduled)</span>
+        <span class="ml-1 text-xs text-gray-500">(leave empty to keep unscheduled)</span>
         <input
           type="date"
           class="mt-1 w-full rounded border border-gray-300 px-2 py-1.5"
@@ -146,7 +146,7 @@
         <input type="checkbox" class="mt-0.5" bind:checked={reusable} />
         <span>
           <span class="font-medium text-gray-700">Reusable</span>
-          <span class="block text-xs text-gray-400">
+          <span class="block text-xs text-gray-500">
             Keeps a copy in the unscheduled tray, so it can be added to the calendar as many
             times as you like.
           </span>
@@ -174,7 +174,7 @@
       </div>
       <label class="block text-sm">
         <span class="font-medium text-gray-700">Due time</span>
-        <span class="ml-1 text-xs text-gray-400">(optional)</span>
+        <span class="ml-1 text-xs text-gray-500">(optional)</span>
         <TimeInput
           wrapper="mt-1 w-full"
           class="w-full rounded border border-gray-300 px-2 py-1.5"

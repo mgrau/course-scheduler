@@ -86,6 +86,7 @@
     {#if tab === 'markdown' || tab === 'html' || tab === 'latex'}
       <select
         class="ml-auto rounded border border-gray-300 px-2 py-1 text-sm"
+        aria-label="Table style"
         bind:value={style}
       >
         <option value="meeting">One row per class day</option>
@@ -113,6 +114,7 @@
     readonly
     rows="18"
     class="w-full rounded border border-gray-300 bg-gray-50 p-2 font-mono text-xs"
+    aria-label="Export preview"
     value={content}
   ></textarea>
 
