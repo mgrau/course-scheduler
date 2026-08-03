@@ -20,10 +20,14 @@
       store.schedule.categories[0]?.name ??
       '',
   );
-  let date = $state(editActivity?.date ?? (st?.mode === 'new' ? (st.date ?? '') : ''));
+  // Cross-prefilled so converting between the two types keeps the date:
+  // an activity's day becomes the due date, and vice versa.
+  let date = $state(
+    editActivity?.date ?? editAssignment?.due ?? (st?.mode === 'new' ? (st.date ?? '') : ''),
+  );
   let reusable = $state(editActivity?.reusable ?? false);
   let assigned = $state(editAssignment?.assigned ?? (st?.mode === 'new' ? (st.date ?? '') : ''));
-  let due = $state(editAssignment?.due ?? '');
+  let due = $state(editAssignment?.due ?? editActivity?.date ?? '');
   let time = $state(editAssignment?.time ?? '');
 
   function close() {
@@ -41,12 +45,18 @@
     if (type === 'activity') {
       const data = { ...common, date: date || undefined, reusable: reusable || undefined };
       if (editActivity) Object.assign(editActivity, data);
-      else store.addActivity(data);
-      // Converted from an assignment? Not supported; keep it simple.
+      else {
+        // Converting an assignment replaces it with a new activity.
+        if (editAssignment) store.deleteAssignment(editAssignment.id);
+        store.addActivity(data);
+      }
     } else {
       const data = { ...common, assigned: assigned || undefined, due, time: time || undefined };
       if (editAssignment) Object.assign(editAssignment, data);
-      else store.addAssignment(data);
+      else {
+        if (editActivity) store.deleteActivity(editActivity.id);
+        store.addAssignment(data);
+      }
     }
     close();
   }
@@ -66,25 +76,29 @@
       save();
     }}
   >
-    {#if isNew}
-      <div class="flex gap-2">
-        <button
-          type="button"
-          class="flex-1 rounded border px-3 py-1.5 text-sm font-medium
-            {type === 'activity'
-            ? 'border-blue-600 bg-blue-50 text-blue-700'
-            : 'border-gray-300 text-gray-500 hover:bg-gray-50'}"
-          onclick={() => (type = 'activity')}>Activity</button
-        >
-        <button
-          type="button"
-          class="flex-1 rounded border px-3 py-1.5 text-sm font-medium
-            {type === 'assignment'
-            ? 'border-blue-600 bg-blue-50 text-blue-700'
-            : 'border-gray-300 text-gray-500 hover:bg-gray-50'}"
-          onclick={() => (type = 'assignment')}>Assignment</button
-        >
-      </div>
+    <div class="flex gap-2">
+      <button
+        type="button"
+        class="flex-1 rounded border px-3 py-1.5 text-sm font-medium
+          {type === 'activity'
+          ? 'border-blue-600 bg-blue-50 text-blue-700'
+          : 'border-gray-300 text-gray-500 hover:bg-gray-50'}"
+        onclick={() => (type = 'activity')}>Activity</button
+      >
+      <button
+        type="button"
+        class="flex-1 rounded border px-3 py-1.5 text-sm font-medium
+          {type === 'assignment'
+          ? 'border-blue-600 bg-blue-50 text-blue-700'
+          : 'border-gray-300 text-gray-500 hover:bg-gray-50'}"
+        onclick={() => (type = 'assignment')}>Assignment</button
+      >
+    </div>
+    {#if !isNew && type !== (editAssignment ? 'assignment' : 'activity')}
+      <p class="rounded bg-sky-50 px-2 py-1.5 text-xs text-sky-800">
+        Saving will convert this {editAssignment ? 'assignment' : 'activity'} into
+        {type === 'assignment' ? 'an assignment' : 'an activity'}.
+      </p>
     {/if}
 
     <label class="block text-sm">

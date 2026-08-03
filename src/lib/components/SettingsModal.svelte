@@ -1,7 +1,6 @@
 <script lang="ts">
   import { flip } from 'svelte/animate';
   import { addDays, dayOrder, fmtDate, parseDate } from '../dates';
-  import { TERM_PRESETS } from '../presets';
   import type { Holiday } from '../types';
   import { store } from '../store.svelte';
   import { ui } from '../ui.svelte';
@@ -70,21 +69,6 @@
 
   const lifted = (kind: ListKind, i: number) => dragKind === kind && dragIndex === i;
 
-  /** Fill the term dates and holidays from an official semester calendar. */
-  function applyPreset(id: string) {
-    const p = TERM_PRESETS.find((x) => x.id === id);
-    if (!p) return;
-    if (
-      s.holidays.length > 0 &&
-      !confirm(`Set the term to ${p.label} and replace the current holidays with its official ones?`)
-    ) {
-      return;
-    }
-    s.course.term.start = p.start;
-    s.course.term.end = p.end;
-    s.holidays = p.holidays.map((h) => ({ ...h }));
-  }
-
   /** A holiday is single-day until it's given a different end date. */
   function setStart(h: Holiday, value: string) {
     const single = h.start === h.end;
@@ -129,22 +113,6 @@
           class="mt-0.5 w-full rounded border border-gray-300 px-2 py-1.5"
           bind:value={s.course.title}
         />
-      </label>
-      <label class="mt-2 block">
-        <span class="text-xs text-gray-500">Semester</span>
-        <select
-          class="mt-0.5 w-full rounded border border-gray-300 px-2 py-1.5"
-          value=""
-          onchange={(e) => {
-            applyPreset(e.currentTarget.value);
-            e.currentTarget.value = '';
-          }}
-        >
-          <option value="" disabled>Apply an official term (dates + holidays)…</option>
-          {#each TERM_PRESETS as p (p.id)}
-            <option value={p.id}>{p.label}</option>
-          {/each}
-        </select>
       </label>
       <div class="mt-2 grid grid-cols-2 gap-3 sm:grid-cols-4">
         <label class="block">

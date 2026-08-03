@@ -172,8 +172,9 @@
 {/if}
 
 {#if showHint}
+  <div class="screen-only fixed inset-0 z-30 bg-black/40"></div>
   <div
-    class="screen-only fixed bottom-4 left-1/2 z-30 w-[26rem] max-w-[calc(100vw-2rem)] -translate-x-1/2 rounded-xl border border-gray-200 bg-white p-4 shadow-xl"
+    class="screen-only fixed left-1/2 top-1/2 z-30 w-[26rem] max-w-[calc(100vw-2rem)] -translate-x-1/2 -translate-y-1/2 rounded-xl border border-gray-200 bg-white p-5 shadow-2xl"
   >
     <h3 class="mb-1.5 font-semibold text-gray-800">👋 Welcome to Course Scheduler</h3>
     <ul class="mb-3 list-disc space-y-1 pl-4 text-sm text-gray-600">
