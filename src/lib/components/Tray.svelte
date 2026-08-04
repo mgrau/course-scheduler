@@ -17,26 +17,24 @@
     {dragOver ? 'ring-2 ring-inset ring-blue-400' : ''}"
   data-drop-tray
 >
-  <div class="flex items-center justify-between gap-2 md:mb-2">
-    <button
-      class="flex min-w-0 items-center gap-1.5 md:pointer-events-none"
-      onclick={() => (open = !open)}
-      aria-expanded={open}
-    >
-      <h2 class="text-sm font-semibold text-gray-700">Unscheduled</h2>
-      <span class="text-xs text-gray-500">({items.length})</span>
-      <Icon
-        name="chevron"
-        class="h-3.5 w-3.5 text-gray-500 transition-transform md:hidden {open ? 'rotate-180' : ''}"
-      />
-    </button>
-    <button
-      class="flex shrink-0 items-center gap-1 rounded-lg bg-blue-600 px-2 py-1 text-xs font-medium text-white shadow-sm hover:bg-blue-500"
-      onclick={() => (ui.editor = { mode: 'new' })}
-    >
-      <Icon name="plus" class="h-3.5 w-3.5" />New item
-    </button>
-  </div>
+  <button
+    class="mb-2 flex w-full items-center justify-center gap-1 rounded-lg bg-blue-600 px-2 py-1.5 text-xs font-medium text-white shadow-sm hover:bg-blue-500"
+    onclick={() => (ui.editor = { mode: 'new' })}
+  >
+    <Icon name="plus" class="h-3.5 w-3.5" />New item
+  </button>
+  <button
+    class="flex min-w-0 items-center gap-1.5 md:pointer-events-none"
+    onclick={() => (open = !open)}
+    aria-expanded={open}
+  >
+    <h2 class="text-sm font-semibold text-gray-700">Unscheduled</h2>
+    <span class="text-xs text-gray-500">({items.length})</span>
+    <Icon
+      name="chevron"
+      class="h-3.5 w-3.5 text-gray-500 transition-transform md:hidden {open ? 'rotate-180' : ''}"
+    />
+  </button>
   <div
     class="{open
       ? 'grid'
