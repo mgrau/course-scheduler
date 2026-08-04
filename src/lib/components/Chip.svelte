@@ -2,6 +2,7 @@
   import type { Activity, Assignment } from '../types';
   import { store } from '../store.svelte';
   import { ui } from '../ui.svelte';
+  import { startChipDrag } from '../dnd.svelte';
   import { categoryColor, darker, dateConflict, lighter } from '../model';
   import Icon from './Icon.svelte';
 
@@ -49,15 +50,23 @@
     kind === 'activity' && !!(item as Activity).reusable && !(item as Activity).date,
   );
 
-  function ondragstart(e: DragEvent) {
-    if (!e.dataTransfer) return;
-    e.dataTransfer.setData('application/x-chip', JSON.stringify({ kind, id: item.id }));
-    if (kind === 'activity') e.dataTransfer.setData('application/x-activity', '1');
-    e.dataTransfer.effectAllowed = template ? 'copy' : 'move';
+  // Pointer-based drag (works on touch); a plain click/tap opens the editor.
+  let justDragged = false;
+
+  function onpointerdown(e: PointerEvent) {
+    startChipDrag(
+      e,
+      { kind, id: item.id, title: item.title, color, template },
+      (dragged) => (justDragged = dragged),
+    );
   }
 
   function onclick(e: MouseEvent) {
     e.stopPropagation();
+    if (justDragged) {
+      justDragged = false;
+      return;
+    }
     ui.editor =
       kind === 'activity' ? { mode: 'activity', id: item.id } : { mode: 'assignment', id: item.id };
   }
@@ -69,9 +78,8 @@
       ? ring
       : ''}"
     style="height: {size}px; {strongStyle}"
-    draggable="true"
     data-chip="activity:{item.id}"
-    {ondragstart}
+    {onpointerdown}
     {onclick}
     title={conflict
       ? `${item.title} — ${conflict}`
@@ -95,9 +103,8 @@
       ? ring
       : ''}"
     style="height: {size}px; {faintStyle}"
-    draggable="true"
     data-chip="assigned:{item.id}"
-    {ondragstart}
+    {onpointerdown}
     {onclick}
     title="{item.title} assigned{conflict ? ` — ${conflict}` : ''}"
   >
@@ -110,9 +117,8 @@
       ? ring
       : ''}"
     style="height: {size}px; {strongStyle}"
-    draggable="true"
     data-chip="due:{item.id}"
-    {ondragstart}
+    {onpointerdown}
     {onclick}
     title="{item.title} due{dueTime ? ' at ' + dueTime : ''}{conflict ? ` — ${conflict}` : ''}"
   >

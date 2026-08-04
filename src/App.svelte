@@ -13,8 +13,9 @@
   import Toolbar from './lib/components/Toolbar.svelte';
   import Tray from './lib/components/Tray.svelte';
   import WebImportModal from './lib/components/WebImportModal.svelte';
+  import { dnd } from './lib/dnd.svelte';
   import { toIcs } from './lib/ics';
-  import { slugify } from './lib/model';
+  import { darker, lighter, slugify } from './lib/model';
   import { decodeShare } from './lib/share';
   import { store } from './lib/store.svelte';
   import type { Schedule } from './lib/types';
@@ -160,7 +161,7 @@
 
 <svelte:window onhashchange={resolveHash} onkeydown={onKeydown} />
 
-<div class="screen-only flex h-screen flex-col bg-white text-gray-900">
+<div class="screen-only flex h-dvh flex-col bg-white text-gray-900">
   <Toolbar />
   <div class="flex flex-1 flex-col overflow-hidden md:flex-row">
     <main class="flex-1 overflow-auto">
@@ -214,6 +215,19 @@
       class="rounded-lg bg-blue-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-blue-500"
       onclick={dismissHint}>Got it</button
     >
+  </div>
+{/if}
+
+{#if dnd.active}
+  <div
+    class="pointer-events-none fixed z-50 max-w-48 -translate-x-1/2 -translate-y-[130%] truncate rounded px-2 py-1 text-xs font-medium shadow-xl"
+    style="left: {dnd.x}px; top: {dnd.y}px; background-color: {ui.dark
+      ? darker(dnd.active.color, 0.62)
+      : lighter(dnd.active.color, 0.6)}; color: {ui.dark
+      ? lighter(dnd.active.color, 0.62)
+      : darker(dnd.active.color, 0.5)}"
+  >
+    {dnd.active.title}
   </div>
 {/if}
 

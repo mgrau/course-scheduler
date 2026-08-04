@@ -149,15 +149,31 @@ input[type='color']::-moz-color-swatch {
   border-radius: 0.375rem;
 }
 
-/* Calendar grid: narrow week gutter on phones, wider on larger screens. */
+/* Calendar grid: display is controlled by utilities (hidden sm:grid). */
 .cal-grid {
-  display: grid;
   grid-template-columns: 2.5rem repeat(var(--cols), minmax(0, 1fr));
 }
 @media (min-width: 640px) {
   .cal-grid {
     grid-template-columns: 4rem repeat(var(--cols), minmax(0, 1fr));
   }
+}
+
+/* iOS zooms the page when focusing controls under 16px — keep them at 16px
+   on phones. */
+@media (max-width: 639px) {
+  input:where(:not([type='checkbox'], [type='color'])),
+  select,
+  textarea {
+    font-size: 16px;
+  }
+}
+
+/* While a chip is being dragged (pointer-based DnD). */
+body.dragging {
+  cursor: grabbing;
+  user-select: none;
+  -webkit-user-select: none;
 }
 
 /* Diagonal hatching for holidays / cancelled days (screen and print). */

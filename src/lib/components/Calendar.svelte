@@ -1,6 +1,7 @@
 <script lang="ts">
-  import { dayOrder, monthShort, parseDate, visibleDayIdxs, weeksOf } from '../dates';
+  import { dayOrder, monthShort, parseDate, shortDate, visibleDayIdxs, weeksOf } from '../dates';
   import { store } from '../store.svelte';
+  import AgendaDay from './AgendaDay.svelte';
   import DayCell from './DayCell.svelte';
 
   const s = $derived(store.schedule);
@@ -24,7 +25,24 @@
   }
 </script>
 
-<div class="cal-grid" style="--cols: {dayIdxs.length}">
+<!-- Phone layout: one row per day with full-width, readable chips. -->
+<div class="sm:hidden">
+  {#each weeks as week, i (i)}
+    <div
+      class="sticky top-0 z-10 flex items-baseline gap-2 border-b border-gray-200 bg-gray-50 px-3 py-1"
+    >
+      <span class="text-xs font-bold uppercase tracking-wide text-gray-600">Week {i + 1}</span>
+      <span class="text-[11px] text-gray-500">
+        {shortDate(week[0])} – {shortDate(week[6])}
+      </span>
+    </div>
+    {#each week as d (d.getTime())}
+      <AgendaDay date={d} />
+    {/each}
+  {/each}
+</div>
+
+<div class="cal-grid hidden sm:grid" style="--cols: {dayIdxs.length}">
   <!-- header row -->
   <div
     class="sticky top-0 z-10 border-b border-r border-gray-200 bg-gray-50 px-2 py-1 text-right text-xs font-semibold uppercase tracking-wide text-gray-500"

@@ -1,5 +1,6 @@
 <script lang="ts">
   import { parseDate, shortDate } from '../dates';
+  import { copyText } from '../model';
   import { encodeShare } from '../share';
   import { store } from '../store.svelte';
   import { ui } from '../ui.svelte';
@@ -13,7 +14,7 @@
   async function copyLink(id: string) {
     const data = await encodeShare(lib.courses[id]);
     const url = `${location.origin}${location.pathname}#data=${data}`;
-    await navigator.clipboard.writeText(url);
+    await copyText(url);
     copiedId = id;
     setTimeout(() => (copiedId = ''), 1500);
   }

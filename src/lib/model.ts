@@ -2,7 +2,26 @@ import type { Activity, Assignment, Meeting, Schedule } from './types';
 import { addDays, fmtDate, parseDate, weekdayName } from './dates';
 
 export function newId(): string {
-  return crypto.randomUUID();
+  // crypto.randomUUID only exists in secure contexts; a LAN-served preview
+  // (http://192.168.…) isn't one, so fall back to a random id there.
+  if (typeof crypto !== 'undefined' && 'randomUUID' in crypto) return crypto.randomUUID();
+  return `id-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
+}
+
+/** Clipboard write that also works outside secure contexts (LAN previews). */
+export async function copyText(text: string): Promise<void> {
+  if (navigator.clipboard?.writeText) {
+    await navigator.clipboard.writeText(text);
+    return;
+  }
+  const ta = document.createElement('textarea');
+  ta.value = text;
+  ta.style.position = 'fixed';
+  ta.style.opacity = '0';
+  document.body.appendChild(ta);
+  ta.select();
+  document.execCommand('copy');
+  ta.remove();
 }
 
 /** URL-friendly slug of a course title, for hash deep links. */

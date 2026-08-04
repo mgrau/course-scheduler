@@ -12,6 +12,7 @@
     lighter,
     meetingsOn,
   } from '../model';
+  import { dnd } from '../dnd.svelte';
   import { store } from '../store.svelte';
   import { ui } from '../ui.svelte';
   import Chip from './Chip.svelte';
@@ -38,7 +39,7 @@
   });
   const chipH = $derived(Math.max(18, Math.min(40, Math.floor(118 / Math.max(nChips, 1)))));
 
-  let dragOver = $state(false);
+  const dragOver = $derived(dnd.over === dateStr);
   // Known holidays keep the gray hatching but pick up a faint seasonal shade.
   const tint = $derived(holiday ? holidayTint(holiday) : null);
   const tintStyle = $derived(
@@ -51,30 +52,6 @@
   $effect(() => {
     if (kbFocused) cell?.scrollIntoView({ block: 'nearest' });
   });
-
-  function acceptable(e: DragEvent): boolean {
-    // Any in-term day accepts items — holidays included; conflicts are
-    // flagged rather than prevented.
-    if (!isIn) return false;
-    return (e.dataTransfer?.types ?? []).includes('application/x-chip');
-  }
-
-  function ondragover(e: DragEvent) {
-    if (acceptable(e)) {
-      e.preventDefault();
-      dragOver = true;
-    }
-  }
-
-  function ondrop(e: DragEvent) {
-    dragOver = false;
-    const raw = e.dataTransfer?.getData('application/x-chip');
-    if (!raw) return;
-    e.preventDefault();
-    const { kind, id } = JSON.parse(raw);
-    if (kind === 'activity') store.placeActivity(id, dateStr);
-    else store.moveAssignment(id, kind, dateStr);
-  }
 
   function onclick() {
     if (isIn) ui.editor = { mode: 'new', date: dateStr };
@@ -97,11 +74,9 @@
     {kbFocused ? 'ring-2 ring-inset ring-blue-600' : ''}
     {dragOver ? 'ring-2 ring-inset ring-blue-400' : ''}"
   style={tintStyle}
+  data-drop-date={isIn ? dateStr : undefined}
   bind:this={cell}
   {onclick}
-  {ondragover}
-  {ondrop}
-  ondragleave={() => (dragOver = false)}
 >
   {#if isIn}
     <div class="flex items-baseline justify-between gap-1">

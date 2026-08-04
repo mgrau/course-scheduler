@@ -1,7 +1,7 @@
 <script lang="ts">
   import { toHtml, toMarkdown, toLatex, type TableStyle } from '../exports';
   import { toIcs } from '../ics';
-  import { slugify } from '../model';
+  import { copyText, slugify } from '../model';
   import { encodeShare } from '../share';
   import { toYaml } from '../yaml-io';
   import { store } from '../store.svelte';
@@ -40,25 +40,29 @@
 
   /** Rich copy: pasting into Canvas's editor drops the table in already rendered. */
   async function copyFormatted() {
-    await navigator.clipboard.write([
-      new ClipboardItem({
-        'text/html': new Blob([content], { type: 'text/html' }),
-        'text/plain': new Blob([content], { type: 'text/plain' }),
-      }),
-    ]);
+    if (navigator.clipboard?.write && typeof ClipboardItem !== 'undefined') {
+      await navigator.clipboard.write([
+        new ClipboardItem({
+          'text/html': new Blob([content], { type: 'text/html' }),
+          'text/plain': new Blob([content], { type: 'text/plain' }),
+        }),
+      ]);
+    } else {
+      await copyText(content); // insecure-context fallback: source only
+    }
     richCopied = true;
     setTimeout(() => (richCopied = false), 1500);
   }
 
   async function copyIcsLink() {
     const data = await encodeShare(store.schedule);
-    await navigator.clipboard.writeText(`${location.origin}${location.pathname}#ics=${data}`);
+    await copyText(`${location.origin}${location.pathname}#ics=${data}`);
     linkCopied = true;
     setTimeout(() => (linkCopied = false), 1500);
   }
 
   async function copy() {
-    await navigator.clipboard.writeText(content);
+    await copyText(content);
     copied = true;
     setTimeout(() => (copied = false), 1500);
   }
@@ -75,10 +79,10 @@
 </script>
 
 <Modal title="Export" onclose={() => (ui.exporter = false)} wide>
-  <div class="mb-3 flex items-center gap-2">
+  <div class="mb-3 flex items-center gap-2 overflow-x-auto">
     {#each [['yaml', 'YAML'], ['markdown', 'Markdown'], ['html', 'HTML'], ['latex', 'LaTeX'], ['ics', 'Calendar (.ics)']] as [id, label] (id)}
       <button
-        class="rounded px-3 py-1 text-sm font-medium
+        class="shrink-0 whitespace-nowrap rounded px-3 py-1 text-sm font-medium
           {tab === id ? 'bg-blue-600 text-white' : 'text-gray-600 hover:bg-gray-100'}"
         onclick={() => (tab = id as Tab)}>{label}</button
       >
