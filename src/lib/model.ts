@@ -1,4 +1,4 @@
-import type { Activity, Assignment, Meeting, Schedule } from './types';
+import type { Activity, Assignment, Holiday, Meeting, Schedule } from './types';
 import { addDays, fmtDate, parseDate, weekdayName } from './dates';
 
 export function newId(): string {
@@ -36,11 +36,23 @@ export function inTerm(s: Schedule, date: string): boolean {
   return date >= s.course.term.start && date <= s.course.term.end;
 }
 
-export function holidayLabel(s: Schedule, date: string): string | null {
+/** The holiday/marked-date entry covering this date, if any. */
+export function dayMark(s: Schedule, date: string): Holiday | null {
   for (const h of s.holidays) {
-    if (date >= h.start && date <= h.end) return h.label;
+    if (date >= h.start && date <= h.end) return h;
   }
   return null;
+}
+
+/** Label of any mark on this date (blocking or not). */
+export function holidayLabel(s: Schedule, date: string): string | null {
+  return dayMark(s, date)?.label ?? null;
+}
+
+/** Label of a class-cancelling holiday on this date, or null. */
+export function blockingHoliday(s: Schedule, date: string): string | null {
+  const h = dayMark(s, date);
+  return h && h.blocks !== false ? h.label : null;
 }
 
 /** Meetings held on this date: weekday matches and the date is within the
@@ -55,9 +67,9 @@ export function meetingsOn(s: Schedule, date: string): Meeting[] {
   );
 }
 
-/** A day class actually meets: in term, has a meeting, not a holiday. */
+/** A day class actually meets: in term, has a meeting, not cancelled. */
 export function isClassDay(s: Schedule, date: string): boolean {
-  return inTerm(s, date) && !holidayLabel(s, date) && meetingsOn(s, date).length > 0;
+  return inTerm(s, date) && !blockingHoliday(s, date) && meetingsOn(s, date).length > 0;
 }
 
 export function categoryColor(s: Schedule, name?: string): string {
@@ -84,7 +96,7 @@ export function unscheduled(s: Schedule): Activity[] {
 export function dateConflict(s: Schedule, date?: string): string | null {
   if (!date) return null;
   if (!inTerm(s, date)) return 'outside the term';
-  const h = holidayLabel(s, date);
+  const h = blockingHoliday(s, date);
   if (h) return `falls on ${h}`;
   return null;
 }

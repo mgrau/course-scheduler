@@ -1,6 +1,6 @@
 import type { Schedule } from './types';
 import { addDays, fmtDate, parseDate, weekdayName } from './dates';
-import { holidayLabel, slugify } from './model';
+import { blockingHoliday, slugify } from './model';
 
 const BYDAY: Record<string, string> = {
   Mon: 'MO',
@@ -80,7 +80,7 @@ export function toIcs(s: Schedule): string {
     const exdates: string[] = [];
     for (let dd = parseDate(first); dd <= mEnd; dd = addDays(dd, 1)) {
       const ds = fmtDate(dd);
-      if (m.days.includes(weekdayName(dd)) && holidayLabel(s, ds)) {
+      if (m.days.includes(weekdayName(dd)) && blockingHoliday(s, ds)) {
         exdates.push(timed ? dt(ds, m.start) : dt(ds));
       }
     }
@@ -88,6 +88,22 @@ export function toIcs(s: Schedule): string {
     push(`SUMMARY:${esc(m.label ? `${s.course.title} — ${m.label}` : s.course.title)}`);
     push('END:VEVENT');
   });
+
+  // Significant dates (non-cancelling marks) as all-day events.
+  s.holidays
+    .filter((h) => h.blocks === false)
+    .forEach((h, i) => {
+      push('BEGIN:VEVENT');
+      push(`UID:${uidBase}-mark-${i}@course-scheduler`);
+      push(`DTSTAMP:${stamp}`);
+      push(`DTSTART;VALUE=DATE:${dt(h.start)}`);
+      if (h.end !== h.start) {
+        // DTEND is exclusive for all-day events.
+        push(`DTEND;VALUE=DATE:${dt(fmtDate(addDays(parseDate(h.end), 1)))}`);
+      }
+      push(`SUMMARY:${esc(h.label)}`);
+      push('END:VEVENT');
+    });
 
   // Scheduled activities as all-day events.
   s.activities

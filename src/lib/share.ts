@@ -63,7 +63,7 @@ function pack(s: Schedule): unknown[] {
       optDate(m.from),
       optDate(m.until),
     ]),
-    s.holidays.map((h) => [off(h.start), off(h.end), h.label]),
+    s.holidays.map((h) => [off(h.start), off(h.end), h.label, h.blocks === false ? 1 : 0]),
     s.categories.map((c) => [c.name, c.color.replace(/^#/, '')]),
     s.activities.map((a) => [
       a.title,
@@ -112,10 +112,11 @@ function unpack(v: any[]): Schedule {
       from: optDate(mf ?? 0),
       until: optDate(mu ?? 0),
     })),
-    holidays: (holidays as any[]).map(([hs, he, hl]) => ({
+    holidays: (holidays as any[]).map(([hs, he, hl, nb]) => ({
       start: date(Number(hs)),
       end: date(Number(he)),
       label: String(hl),
+      ...(nb ? { blocks: false as const } : {}),
     })),
     categories,
     activities: (acts as any[]).map(([t, d, c, ds, re]) => ({

@@ -18,6 +18,7 @@ export function sampleSchedule(): Schedule {
       { start: '2026-09-07', end: '2026-09-07', label: 'Labor Day' },
       { start: '2026-10-12', end: '2026-10-13', label: 'Fall Break' },
       { start: '2026-11-25', end: '2026-11-27', label: 'Thanksgiving' },
+      { start: '2026-11-03', end: '2026-11-03', label: 'Drop Deadline', blocks: false },
     ],
     categories: [
       { name: 'lecture', color: '#22d3ee' },

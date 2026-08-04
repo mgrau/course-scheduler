@@ -16,8 +16,8 @@
     activitiesOn,
     assignedOn,
     categoryColor,
+    dayMark,
     dueOn,
-    holidayLabel,
     holidayTint,
     inTerm,
     darker,
@@ -125,8 +125,9 @@
                       {@const d = week[i]}
                       {@const dateStr = fmtDate(d)}
                       {@const visible = sameMonth(d, month) && inTerm(s, dateStr)}
-                      {@const holiday = visible ? holidayLabel(s, dateStr) : null}
-                      {@const tint = holiday ? holidayTint(holiday) : null}
+                      {@const mark = visible ? dayMark(s, dateStr) : null}
+                      {@const holiday = mark && mark.blocks !== false ? mark.label : null}
+                      {@const tint = mark ? holidayTint(mark.label) : null}
                       {@const wknd = d.getDay() === 0 || d.getDay() === 6}
                       <td
                         class="border border-gray-400 p-1 align-top text-[10px]
@@ -151,11 +152,11 @@
                               </span>
                             {/if}
                           </div>
-                          {#if holiday}
+                          {#if mark}
                             <div
                               class="mt-0.5 inline-block rounded bg-white/80 px-1 py-px text-[8px] font-semibold uppercase tracking-wide text-gray-500"
                             >
-                              {holiday}
+                              {mark.label}
                             </div>
                           {/if}
                           <div class="mt-0.5 space-y-0.5">
@@ -239,8 +240,9 @@
                 {@const d = week[i]}
                 {@const dateStr = fmtDate(d)}
                 {@const inside = inTerm(s, dateStr)}
-                {@const holiday = inside ? holidayLabel(s, dateStr) : null}
-                {@const tint = holiday ? holidayTint(holiday) : null}
+                {@const mark = inside ? dayMark(s, dateStr) : null}
+                {@const holiday = mark && mark.blocks !== false ? mark.label : null}
+                {@const tint = mark ? holidayTint(mark.label) : null}
                 {@const wknd = d.getDay() === 0 || d.getDay() === 6}
                 <td
                   class="overflow-hidden border border-gray-400 p-0.5 align-top text-[7px] leading-tight
@@ -255,8 +257,8 @@
                 >
                   {#if inside}
                     <span class="font-semibold text-gray-400">{d.getDate()}</span>
-                    {#if holiday}
-                      <span class="italic text-gray-500">{holiday}</span>
+                    {#if mark}
+                      <span class="italic text-gray-500">{mark.label}</span>
                     {/if}
                     <div class="space-y-px">
                       {#each activitiesOn(s, dateStr) as a (a.id)}

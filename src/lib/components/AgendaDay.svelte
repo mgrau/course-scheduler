@@ -5,8 +5,8 @@
     activitiesOn,
     assignedOn,
     darker,
+    dayMark,
     dueOn,
-    holidayLabel,
     holidayTint,
     inTerm,
     isClassDay,
@@ -22,7 +22,8 @@
   const s = $derived(store.schedule);
   const dateStr = $derived(fmtDate(date));
   const isIn = $derived(inTerm(s, dateStr));
-  const holiday = $derived(isIn ? holidayLabel(s, dateStr) : null);
+  const mark = $derived(isIn ? dayMark(s, dateStr) : null);
+  const holiday = $derived(mark && mark.blocks !== false ? mark.label : null);
   const meetings = $derived(isIn && !holiday ? meetingsOn(s, dateStr) : []);
   const acts = $derived(activitiesOn(s, dateStr));
   const asg = $derived(assignedOn(s, dateStr));
@@ -33,9 +34,9 @@
   // Agenda rows exist for days that carry anything: class meetings, items,
   // or a holiday. Quiet weekends collapse away entirely.
   const visible = $derived(
-    isIn && (holiday || meetings.length > 0 || acts.length > 0 || asg.length > 0 || due.length > 0),
+    isIn && (mark || meetings.length > 0 || acts.length > 0 || asg.length > 0 || due.length > 0),
   );
-  const tint = $derived(holiday ? holidayTint(holiday) : null);
+  const tint = $derived(mark ? holidayTint(mark.label) : null);
   const tintStyle = $derived(
     tint
       ? `background-color: ${ui.dark ? darker(tint, 0.93) : lighter(tint, 0.95)}`
@@ -63,13 +64,14 @@
       </div>
     </div>
     <div class="min-w-0 flex-1 space-y-1 py-0.5">
-      {#if holiday}
+      {#if mark}
         <span
           class="inline-block rounded bg-white/80 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-gray-500"
         >
-          {holiday}
+          {mark.label}
         </span>
-      {:else if meetings.length > 0}
+      {/if}
+      {#if !holiday && meetings.length > 0}
         <div class="text-[10px] font-medium text-slate-500">
           {meetings.map((m) => m.label ?? 'class').join(' · ')}
         </div>

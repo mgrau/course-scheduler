@@ -18,9 +18,10 @@ export function toYaml(s: Schedule): string {
     view: s.view,
     weekStart: s.weekStart,
     meetings: s.meetings.map((m) => clean(m)),
-    holidays: s.holidays.map((h) =>
-      h.start === h.end ? { date: h.start, label: h.label } : { ...h },
-    ),
+    holidays: s.holidays.map((h) => ({
+      ...(h.start === h.end ? { date: h.start, label: h.label } : { start: h.start, end: h.end, label: h.label }),
+      ...(h.blocks === false ? { blocks: false } : {}),
+    })),
     categories: s.categories,
     activities: s.activities.map(({ id, ...rest }) => clean(rest)),
     assignments: s.assignments.map(({ id, ...rest }) => clean(rest)),
@@ -52,7 +53,12 @@ export function fromYaml(text: string): Schedule {
   const holidays = (raw.holidays ?? []).map((h: any) => {
     const start = dstr(h.date ?? h.start);
     if (!start) throw new Error(`Holiday "${h.label ?? '?'}" needs a date or start.`);
-    return { start, end: dstr(h.end ?? h.date ?? h.start)!, label: String(h.label ?? 'Holiday') };
+    return {
+      start,
+      end: dstr(h.end ?? h.date ?? h.start)!,
+      label: String(h.label ?? 'Holiday'),
+      ...(h.blocks === false ? { blocks: false as const } : {}),
+    };
   });
 
   const activities = (raw.activities ?? []).map((a: any) => {

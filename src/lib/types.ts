@@ -30,6 +30,12 @@ export interface Holiday {
   start: string;
   end: string;
   label: string;
+  /**
+   * Whether class is cancelled on these days (the default). false marks the
+   * dates as significant — labelled on the calendar — while class meets
+   * normally and nothing scheduled there is flagged as a conflict.
+   */
+  blocks?: boolean;
 }
 
 export interface Category {

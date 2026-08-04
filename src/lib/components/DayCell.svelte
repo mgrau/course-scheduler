@@ -5,7 +5,7 @@
     assignedOn,
     darker,
     dueOn,
-    holidayLabel,
+    dayMark,
     holidayTint,
     inTerm,
     isClassDay,
@@ -22,7 +22,8 @@
   const s = $derived(store.schedule);
   const dateStr = $derived(fmtDate(date));
   const isIn = $derived(inTerm(s, dateStr));
-  const holiday = $derived(isIn ? holidayLabel(s, dateStr) : null);
+  const mark = $derived(isIn ? dayMark(s, dateStr) : null);
+  const holiday = $derived(mark && mark.blocks !== false ? mark.label : null);
   const meetings = $derived(isIn && !holiday ? meetingsOn(s, dateStr) : []);
   const classDay = $derived(isClassDay(s, dateStr));
   const isToday = $derived(dateStr === todayStr());
@@ -41,7 +42,7 @@
 
   const dragOver = $derived(dnd.over === dateStr);
   // Known holidays keep the gray hatching but pick up a faint seasonal shade.
-  const tint = $derived(holiday ? holidayTint(holiday) : null);
+  const tint = $derived(mark ? holidayTint(mark.label) : null);
   const tintStyle = $derived(
     tint
       ? `background-color: ${ui.dark ? darker(tint, 0.93) : lighter(tint, 0.95)}`
@@ -95,11 +96,11 @@
         </span>
       {/if}
     </div>
-    {#if holiday}
+    {#if mark}
       <div
         class="mt-1 inline-block rounded bg-white/80 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-gray-500"
       >
-        {holiday}
+        {mark.label}
       </div>
     {/if}
     <div class="mt-1 space-y-0.5">

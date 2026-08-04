@@ -96,6 +96,18 @@
   }
 </script>
 
+{#snippet removeBtn(action: () => void)}
+  <button
+    type="button"
+    class="ml-auto shrink-0 rounded p-1 text-gray-400 hover:bg-red-50 hover:text-red-600"
+    title="Remove"
+    aria-label="Remove"
+    onclick={action}
+  >
+    <Icon name="x" class="h-3.5 w-3.5" />
+  </button>
+{/snippet}
+
 {#snippet grip(kind: 'cat' | 'hol', arr: unknown[], i: number)}
   <button
     type="button"
@@ -200,11 +212,18 @@
               aria-label="Meeting label"
               bind:value={meeting.label}
             />
-            <button
-              type="button"
-              class="ml-auto text-xs text-red-600 hover:underline"
-              onclick={() => s.meetings.splice(i, 1)}>remove</button
-            >
+            {#if meeting.from === undefined && meeting.until === undefined}
+              <button
+                type="button"
+                class="text-xs font-medium text-blue-600 hover:underline"
+                title="e.g. classes stop before exam week"
+                onclick={() => {
+                  meeting.from = s.course.term.start;
+                  meeting.until = s.course.term.end;
+                }}>+ limit meeting dates</button
+              >
+            {/if}
+            {@render removeBtn(() => s.meetings.splice(i, 1))}
             {#if meeting.from !== undefined || meeting.until !== undefined}
               <div class="flex w-full flex-wrap items-center gap-2 text-xs text-gray-500">
                 meets from
@@ -234,16 +253,6 @@
                   <Icon name="x" class="h-3 w-3" />
                 </button>
               </div>
-            {:else}
-              <button
-                type="button"
-                class="w-full text-left text-xs font-medium text-blue-600 hover:underline"
-                title="e.g. classes stop before exam week"
-                onclick={() => {
-                  meeting.from = s.course.term.start;
-                  meeting.until = s.course.term.end;
-                }}>+ limit meeting dates</button
-              >
             {/if}
           </div>
         {/each}
@@ -258,7 +267,7 @@
 
     <section>
       <div class="mb-2 flex items-baseline justify-between">
-        <h3 class="font-semibold text-gray-700">Holidays &amp; cancellations</h3>
+        <h3 class="font-semibold text-gray-700">Holidays &amp; key dates</h3>
         <button
           type="button"
           class="text-xs font-medium text-blue-600 hover:underline"
@@ -291,22 +300,24 @@
             />
             {#if h.start !== h.end}
               <span class="text-gray-400">–</span>
-              <input
-                type="date"
-                class="rounded border border-gray-300 px-1.5 py-1"
-                min={h.start}
-                aria-label="Holiday end date"
-                bind:value={h.end}
-              />
-              <button
-                type="button"
-                class="rounded p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-700"
-                title="Make this a single day"
-                aria-label="Make this a single day"
-                onclick={() => (h.end = h.start)}
-              >
-                <Icon name="x" class="h-3 w-3" />
-              </button>
+              <span class="flex items-center gap-0.5">
+                <input
+                  type="date"
+                  class="rounded border border-gray-300 px-1.5 py-1"
+                  min={h.start}
+                  aria-label="Holiday end date"
+                  bind:value={h.end}
+                />
+                <button
+                  type="button"
+                  class="rounded p-0.5 text-gray-400 hover:bg-gray-100 hover:text-gray-700"
+                  title="Make this a single day"
+                  aria-label="Make this a single day"
+                  onclick={() => (h.end = h.start)}
+                >
+                  <Icon name="x" class="h-3 w-3" />
+                </button>
+              </span>
             {:else}
               <button
                 type="button"
@@ -314,11 +325,18 @@
                 onclick={() => makeMultiDay(h)}>+ end date</button
               >
             {/if}
-            <button
-              type="button"
-              class="ml-auto text-xs text-red-600 hover:underline"
-              onclick={() => s.holidays.splice(i, 1)}>remove</button
+            <label
+              class="flex shrink-0 cursor-pointer items-center gap-1 text-xs text-gray-500"
+              title="Checked: class is cancelled and scheduled items are flagged. Unchecked: just a labelled date — class meets normally."
             >
+              <input
+                type="checkbox"
+                checked={h.blocks !== false}
+                onchange={(e) => (h.blocks = e.currentTarget.checked ? undefined : false)}
+              />
+              no class
+            </label>
+            {@render removeBtn(() => s.holidays.splice(i, 1))}
           </div>
         {/each}
       </div>
@@ -354,11 +372,7 @@
               aria-label="Category name"
               bind:value={c.name}
             />
-            <button
-              type="button"
-              class="ml-auto text-xs text-red-600 hover:underline"
-              onclick={() => s.categories.splice(i, 1)}>remove</button
-            >
+            {@render removeBtn(() => s.categories.splice(i, 1))}
           </div>
         {/each}
       </div>

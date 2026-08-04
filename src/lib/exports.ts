@@ -3,10 +3,11 @@ import { addDays, fmtDate, parseDate, shortDate, weekdayName, weeksOf } from './
 import {
   activitiesOn,
   assignedOn,
+  blockingHoliday,
   categoryColor,
   darker,
+  dayMark,
   dueOn,
-  holidayLabel,
   lighter,
   meetingsOn,
 } from './model';
@@ -15,25 +16,30 @@ export type TableStyle = 'meeting' | 'week';
 
 interface DayRow {
   d: Date;
+  /** Class-cancelling holiday label. */
   holiday: string | null;
+  /** Non-cancelling significant-date label. */
+  marker: string | null;
   activities: Activity[];
   assigned: Assignment[];
   due: Assignment[];
 }
 
-/** Days worth a table row: class days, plus any day with items or a holiday on a meeting weekday. */
+/** Days worth a table row: class days, plus any day with items or a mark. */
 function dayRows(s: Schedule): DayRow[] {
   const rows: DayRow[] = [];
   const end = parseDate(s.course.term.end);
   for (let d = parseDate(s.course.term.start); d <= end; d = addDays(d, 1)) {
     const date = fmtDate(d);
-    const holiday = holidayLabel(s, date);
+    const mark = dayMark(s, date);
+    const holiday = mark && mark.blocks !== false ? mark.label : null;
+    const marker = mark && mark.blocks === false ? mark.label : null;
     const activities = activitiesOn(s, date);
     const assigned = assignedOn(s, date);
     const due = dueOn(s, date);
     const meets = meetingsOn(s, date).length > 0;
-    if (meets || activities.length || assigned.length || due.length) {
-      rows.push({ d: new Date(d), holiday, activities, assigned, due });
+    if (meets || marker || activities.length || assigned.length || due.length) {
+      rows.push({ d: new Date(d), holiday, marker, activities, assigned, due });
     }
   }
   return rows;
@@ -55,8 +61,10 @@ function weekRows(s: Schedule): WeekRow[] {
     for (const d of week) {
       const date = fmtDate(d);
       const wd = weekdayName(d);
-      const holiday = holidayLabel(s, date);
-      if (holiday && meetingsOn(s, date).length > 0) activities.push(`${wd}: ${holiday} (no class)`);
+      const mark = dayMark(s, date);
+      if (mark && mark.blocks !== false && meetingsOn(s, date).length > 0)
+        activities.push(`${wd}: ${mark.label} (no class)`);
+      else if (mark && mark.blocks === false) activities.push(`${wd}: ${mark.label}`);
       for (const a of activitiesOn(s, date)) activities.push(`${wd}: ${a.title}`);
       for (const a of dueOn(s, date)) due.push(`${a.title} (${wd}${a.time ? ' ' + a.time : ''})`);
     }
@@ -82,7 +90,9 @@ export function toMarkdown(s: Schedule, style: TableStyle): string {
     for (const r of dayRows(s)) {
       const acts = r.holiday
         ? `*No class — ${r.holiday}*`
-        : r.activities.map((a) => mdEscape(a.title)).join('; ');
+        : [r.marker ? `*${mdEscape(r.marker)}*` : '', ...r.activities.map((a) => mdEscape(a.title))]
+            .filter(Boolean)
+            .join('; ');
       const asg = r.assigned.map((a) => mdEscape(a.title)).join('; ');
       const due = r.due.map((a) => mdEscape(dueLabel(a))).join('; ');
       lines.push(`| ${shortDate(r.d)} | ${weekdayName(r.d)} | ${acts} | ${asg} | ${due} |`);
@@ -125,7 +135,12 @@ export function toLatex(s: Schedule, style: TableStyle): string {
     for (const r of dayRows(s)) {
       const acts = r.holiday
         ? `\\emph{No class — ${texEscape(r.holiday)}}`
-        : r.activities.map((a) => texEscape(a.title)).join('; ');
+        : [
+            r.marker ? `\\emph{${texEscape(r.marker)}}` : '',
+            ...r.activities.map((a) => texEscape(a.title)),
+          ]
+            .filter(Boolean)
+            .join('; ');
       const asg = r.assigned.map((a) => texEscape(a.title)).join('; ');
       const due = r.due.map((a) => texEscape(dueLabel(a))).join('; ');
       lines.push(
@@ -195,7 +210,12 @@ export function toHtml(s: Schedule, style: TableStyle): string {
     for (const r of dayRows(s)) {
       const acts = r.holiday
         ? `<em style="color:#6b7280">No class &mdash; ${htmlEscape(r.holiday)}</em>`
-        : r.activities.map((a) => chip(s, a.title, a.category)).join('<br>');
+        : [
+            r.marker ? `<em style="color:#6b7280">${htmlEscape(r.marker)}</em>` : '',
+            ...r.activities.map((a) => chip(s, a.title, a.category)),
+          ]
+            .filter(Boolean)
+            .join('<br>');
       const asg = r.assigned.map((a) => chip(s, `${a.title} →`, a.category)).join('<br>');
       const due = r.due
         .map((a) => chip(s, `→ ${dueLabel(a)}`, a.category, true))
