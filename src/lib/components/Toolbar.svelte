@@ -47,21 +47,27 @@
   <h1 class="sr-only">Course Scheduler</h1>
   <div class="flex flex-wrap items-center gap-x-2 gap-y-1.5 px-3 py-2">
     <span
-      class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-sky-500"
+      class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#334155]"
     >
-      <svg viewBox="0 0 24 24" class="h-6 w-6" fill="none" aria-hidden="true">
-        <rect x="3.5" y="4.8" width="17" height="16.2" rx="2.5" fill="white" />
-        <path
-          d="M6 4.8 H18 A2.5 2.5 0 0 1 20.5 7.3 V8.8 H3.5 V7.3 A2.5 2.5 0 0 1 6 4.8 Z"
-          fill="#0ea5e9"
-        />
-        <rect x="6.9" y="2.4" width="1.9" height="4.4" rx="0.95" fill="white" />
-        <rect x="15.2" y="2.4" width="1.9" height="4.4" rx="0.95" fill="white" />
-        {#each [11.2, 15.6] as y (y)}
-          {#each [6.4, 10.8, 15.2] as x (x)}
-            <rect {x} {y} width="2.4" height="2.4" rx="0.6" fill="#0ea5e9" />
-          {/each}
+      <!-- Spiral-bound planner, pencil mid-line -->
+      <svg viewBox="0 0 24 24" class="h-8 w-8" fill="none" aria-hidden="true">
+        <rect x="4.5" y="6.4" width="15" height="14.1" rx="2.2" fill="white" />
+        {#each [7.9, 12, 16.1] as cx (cx)}
+          <rect
+            x={cx - 0.95}
+            y="2.9"
+            width="1.9"
+            height="4.6"
+            rx="0.95"
+            fill="none"
+            stroke="white"
+            stroke-width="1.15"
+          />
         {/each}
+        <path d="M7.5 11.2 H16.5" stroke="#334155" stroke-width="1.7" stroke-linecap="round" />
+        <path d="M7.5 14.8 H10.2" stroke="#334155" stroke-width="1.7" stroke-linecap="round" />
+        <path d="M12.2 14.1 L15.1 11.2 L18 14.1 L15.1 17 Z" fill="#fbbf24" />
+        <path d="M12.2 14.1 L15.1 17 L11.2 18 Z" fill="#0f172a" />
       </svg>
     </span>
     <input
