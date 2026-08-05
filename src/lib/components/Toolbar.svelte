@@ -29,12 +29,31 @@
     }
   }
 
-  // Copies a self-contained link without touching the address bar.
+  // The share link is kept pre-encoded so the click handler can write to the
+  // clipboard synchronously — WebKit-based browsers void the user gesture
+  // (and reject the write) if an await happens first.
+  let cachedLink = $state('');
+  let linkTimer: ReturnType<typeof setTimeout> | undefined;
+  $effect(() => {
+    JSON.stringify(store.schedule);
+    clearTimeout(linkTimer);
+    linkTimer = setTimeout(async () => {
+      cachedLink = `${location.origin}${location.pathname}#data=${await encodeShare(store.schedule)}`;
+    }, 250);
+    return () => clearTimeout(linkTimer);
+  });
+
   async function copyLink() {
-    const data = await encodeShare(store.schedule);
-    await copyText(`${location.origin}${location.pathname}#data=${data}`);
-    copied = true;
-    setTimeout(() => (copied = false), 1500);
+    const url =
+      cachedLink ||
+      `${location.origin}${location.pathname}#data=${await encodeShare(store.schedule)}`;
+    if (await copyText(url)) {
+      copied = true;
+      setTimeout(() => (copied = false), 1500);
+    } else {
+      // Clipboard blocked (e.g. DuckDuckGo) — offer manual copying.
+      ui.copyDialog = url;
+    }
   }
 
   const btn =

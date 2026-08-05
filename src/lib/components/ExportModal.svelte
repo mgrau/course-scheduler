@@ -14,6 +14,8 @@
   let copied = $state(false);
   let linkCopied = $state(false);
   let richCopied = $state(false);
+  let copyBlocked = $state(false);
+  let preview = $state<HTMLTextAreaElement | undefined>();
 
   const content = $derived(
     tab === 'yaml'
@@ -40,31 +42,54 @@
 
   /** Rich copy: pasting into Canvas's editor drops the table in already rendered. */
   async function copyFormatted() {
+    let ok = false;
     if (navigator.clipboard?.write && typeof ClipboardItem !== 'undefined') {
-      await navigator.clipboard.write([
-        new ClipboardItem({
-          'text/html': new Blob([content], { type: 'text/html' }),
-          'text/plain': new Blob([content], { type: 'text/plain' }),
-        }),
-      ]);
-    } else {
-      await copyText(content); // insecure-context fallback: source only
+      try {
+        await navigator.clipboard.write([
+          new ClipboardItem({
+            'text/html': new Blob([content], { type: 'text/html' }),
+            'text/plain': new Blob([content], { type: 'text/plain' }),
+          }),
+        ]);
+        ok = true;
+      } catch {
+        /* fall through to plain copy */
+      }
     }
-    richCopied = true;
-    setTimeout(() => (richCopied = false), 1500);
+    if (!ok) ok = await copyText(content); // plain source only
+    if (ok) {
+      richCopied = true;
+      setTimeout(() => (richCopied = false), 1500);
+    } else {
+      preview?.focus();
+      preview?.select();
+      copyBlocked = true;
+      setTimeout(() => (copyBlocked = false), 3000);
+    }
   }
 
   async function copyIcsLink() {
     const data = await encodeShare(store.schedule);
-    await copyText(`${location.origin}${location.pathname}#ics=${data}`);
-    linkCopied = true;
-    setTimeout(() => (linkCopied = false), 1500);
+    const url = `${location.origin}${location.pathname}#ics=${data}`;
+    if (await copyText(url)) {
+      linkCopied = true;
+      setTimeout(() => (linkCopied = false), 1500);
+    } else {
+      ui.copyDialog = url;
+    }
   }
 
   async function copy() {
-    await copyText(content);
-    copied = true;
-    setTimeout(() => (copied = false), 1500);
+    if (await copyText(content)) {
+      copied = true;
+      setTimeout(() => (copied = false), 1500);
+    } else {
+      // Clipboard blocked: select the preview so the user can copy manually.
+      preview?.focus();
+      preview?.select();
+      copyBlocked = true;
+      setTimeout(() => (copyBlocked = false), 3000);
+    }
   }
 
   function download() {
@@ -120,7 +145,14 @@
     class="w-full rounded border border-gray-300 bg-gray-50 p-2 font-mono text-xs"
     aria-label="Export preview"
     value={content}
+    bind:this={preview}
   ></textarea>
+
+  {#if copyBlocked}
+    <p class="mt-1 rounded bg-amber-50 px-2 py-1 text-xs text-amber-800" aria-live="polite">
+      Your browser blocked copying — the text above is selected, press ⌘C / Ctrl+C.
+    </p>
+  {/if}
 
   <div class="mt-3 flex justify-end gap-2">
     {#if tab === 'ics'}

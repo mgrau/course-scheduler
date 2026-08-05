@@ -3,6 +3,7 @@
   import { addDays, fmtDate, parseDate, todayStr } from './lib/dates';
   import Calendar from './lib/components/Calendar.svelte';
   import ConflictsModal from './lib/components/ConflictsModal.svelte';
+  import CopyLinkModal from './lib/components/CopyLinkModal.svelte';
   import CoursesModal from './lib/components/CoursesModal.svelte';
   import ExportModal from './lib/components/ExportModal.svelte';
   import HelpModal from './lib/components/HelpModal.svelte';
@@ -55,7 +56,8 @@
     ui.printDialog ||
     ui.webImport ||
     ui.conflicts ||
-    ui.help;
+    ui.help ||
+    !!ui.copyDialog;
 
   // Global keys: undo/redo everywhere; arrows/Enter navigate the calendar.
   function onKeydown(e: KeyboardEvent) {
@@ -188,6 +190,9 @@
 {/if}
 {#if ui.help}
   <HelpModal />
+{/if}
+{#if ui.copyDialog}
+  <CopyLinkModal />
 {/if}
 {#if ui.exporter}
   <ExportModal />

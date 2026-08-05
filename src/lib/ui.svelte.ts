@@ -11,6 +11,8 @@ export const ui = $state({
   webImport: false,
   conflicts: false,
   help: false,
+  /** URL shown for manual copying when the clipboard is blocked. */
+  copyDialog: null as string | null,
   /** Dark theme active. */
   dark: false,
   /** Keyboard-focused day on the calendar (YYYY-MM-DD), or null. */

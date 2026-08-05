@@ -14,9 +14,12 @@
   async function copyLink(id: string) {
     const data = await encodeShare(lib.courses[id]);
     const url = `${location.origin}${location.pathname}#data=${data}`;
-    await copyText(url);
-    copiedId = id;
-    setTimeout(() => (copiedId = ''), 1500);
+    if (await copyText(url)) {
+      copiedId = id;
+      setTimeout(() => (copiedId = ''), 1500);
+    } else {
+      ui.copyDialog = url;
+    }
   }
 
   function termLabel(id: string): string {

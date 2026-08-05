@@ -8,20 +8,35 @@ export function newId(): string {
   return `id-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
 }
 
-/** Clipboard write that also works outside secure contexts (LAN previews). */
-export async function copyText(text: string): Promise<void> {
+/**
+ * Clipboard write that reports whether it actually worked. Privacy browsers
+ * (e.g. DuckDuckGo) expose navigator.clipboard but reject the write, and the
+ * API is missing entirely outside secure contexts — both fall back to the
+ * legacy execCommand path, and callers get false if everything failed so
+ * they can offer manual copying instead.
+ */
+export async function copyText(text: string): Promise<boolean> {
   if (navigator.clipboard?.writeText) {
-    await navigator.clipboard.writeText(text);
-    return;
+    try {
+      await navigator.clipboard.writeText(text);
+      return true;
+    } catch {
+      // Permission denied or user gesture expired — try the legacy path.
+    }
   }
-  const ta = document.createElement('textarea');
-  ta.value = text;
-  ta.style.position = 'fixed';
-  ta.style.opacity = '0';
-  document.body.appendChild(ta);
-  ta.select();
-  document.execCommand('copy');
-  ta.remove();
+  try {
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.position = 'fixed';
+    ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.select();
+    const ok = document.execCommand('copy');
+    ta.remove();
+    return ok;
+  } catch {
+    return false;
+  }
 }
 
 /** URL-friendly slug of a course title, for hash deep links. */
